@@ -1,0 +1,19 @@
+{
+  "name": "earth-3d-dashboard",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "lite-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@babylonjs/core": "^7.35.1",
+    "@babylonjs/gui": "^7.35.1",
+    "@babylonjs/loaders": "^7.35.1",
+    "babylonjs": "^7.35.1",
+    "earth-3d-dashboard": "file:"
+  }
+}

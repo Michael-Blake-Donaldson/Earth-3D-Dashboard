@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Iceberg&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrollbars */
+  font-family: Arial, sans-serif;
+}
+
+canvas {
+  width: 100%;
+  height: 100vh;
+  display: block; /* Remove any extra space around the canvas */
+}
+
+/* Header Styling */
+header {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+  backdrop-filter: blur(10px); /* Glassmorphic blur */
+  z-index: 10;
+  padding: 10px 20px;
+  display: flex;
+  flex-direction: column; /* Stack title and navigation */
+  align-items: center; /* Center align content horizontally */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+}
+
+/* Title Styling */
+.title {
+  font-family: "Iceberg", sans-serif;
+  font-size: 36px;
+  color: #ffffff; /* White text */
+  text-transform: uppercase;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  margin-bottom: 10px; /* Add spacing between title and nav */
+  animation: fadeInDown 1.2s ease-in-out;
+  transition: 0.3s ease-in-out;
+}
+
+.title:hover{
+  transform: scale(110%);
+  transform: translateY(-5px);
+  color: lightblue;
+}
+
+/* Fade-in animation for the title */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Navigation Styling */
+nav {
+  display: flex;
+  gap: 30px; /* Add spacing between menu items */
+}
+
+nav a {
+  text-decoration: none;
+  color: white; /* White text */
+  font-weight: bold;
+  font-size: 16px;
+  transition: color 0.3s ease-in-out;
+}
+
+nav a:hover {
+  color: lightblue; /* Highlight on hover */
+}
+
+
+/* Style for the buttons container */
+#buttons-container {
+  position: absolute;
+  top: 200px;
+  left: 100px;
+  display: flex;
+  flex-direction: column; /* Stack buttons vertically */
+  gap: 10px; /* Add spacing between buttons */
+}
+
+/* Style for the buttons */
+button {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, lightblue, steelblue); /* Modern gradient */
+  color: white; /* White text */
+  border: none;
+  border-radius: 8px; /* Rounded corners */
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+/* Hover effect for buttons */
+button:hover {
+  background: linear-gradient(135deg, steelblue, lightblue); /* Slightly darker gradient */
+  transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+/* Active effect for buttons */
+button:active {
+  transform: scale(0.95); /* Shrink slightly on click */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); /* Adjust shadow on click */
+}
+
+
+@media (max-width: 768px) {
+  #buttons-container {
+    top: 100px;
+    left: 20px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+}

@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Iceberg&display=swap');
+
+/* General Body Styling */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(120deg, lightblue, steelblue); /* Matching gradient */
+    color: #ffffff;
+}
+
+/* Header Styling */
+header {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+    backdrop-filter: blur(10px); /* Glassmorphic blur */
+    z-index: 10;
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column; /* Stack title and navigation */
+    align-items: center; /* Center align content horizontally */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  }
+  
+  /* Title Styling */
+  .title {
+    font-family: "Iceberg", sans-serif;
+    font-size: 36px;
+    color: #ffffff; /* White text */
+    text-transform: uppercase;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    margin-bottom: 10px; /* Add spacing between title and nav */
+    animation: fadeInDown 1.2s ease-in-out;
+    transition: 0.3s ease-in-out;
+}
+
+.title:hover{
+  transform: scale(110%);
+  transform: translateY(-5px);
+  color: lightblue;
+}
+  
+  /* Fade-in animation for the title */
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Navigation Styling */
+  nav {
+    display: flex;
+    gap: 30px; /* Add spacing between menu items */
+  }
+  
+  nav a {
+    text-decoration: none;
+    color: white; /* White text */
+    font-weight: bold;
+    font-size: 16px;
+    transition: color 0.3s ease-in-out;
+  }
+  
+  nav a:hover {
+    color: lightblue; /* Highlight on hover */
+  }
+
+/* Blog Main Section */
+main {
+    max-width: 1200px;
+    margin: 120px auto;
+    padding: 20px;
+}
+
+/* Search Bar */
+.search-bar {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#search-input {
+    width: 80%;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* Articles Section */
+#articles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.article {
+    background: rgba(255, 255, 255, 0.15); /* Semi-transparent glass effect */
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* Ensure content stays within the card */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.article:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Elevate on hover */
+}
+
+/* Style for the clickable link inside the article */
+.article-link {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none; /* Remove underline */
+    color: inherit; /* Inherit text color */
+    height: 100%;
+}
+
+.article img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.article-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.article-category {
+    font-size: 14px;
+    font-weight: bold;
+    color: lightblue;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.article-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: white;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7); /* Glow effect for better visibility */
+}
+
+.article-excerpt {
+    font-size: 16px;
+    color: #ddd;
+    margin-bottom: 10px;
+}
+
+/* Add hover effect for titles */
+.article-title:hover {
+    color: lightblue;
+    text-decoration: underline;
+}
+
