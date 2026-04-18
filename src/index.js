@@ -1,6 +1,10 @@
 let canvas;
 let statusLabel;
 let pageLoader;
+let heroOverlay;
+let controlsOverlay;
+let startButton;
+let closeControls;
 
 let mapButtons = [];
 let skinButtons = [];
@@ -12,6 +16,10 @@ const initDomRefs = () => {
   canvas = document.getElementById("renderCanvas");
   statusLabel = document.getElementById("scene-status");
   pageLoader = document.getElementById("page-loader");
+  heroOverlay = document.querySelector(".hero-overlay");
+  controlsOverlay = document.getElementById("controls-overlay");
+  startButton = document.getElementById("start-button");
+  closeControls = document.getElementById("close-controls");
   mapButtons = [...document.querySelectorAll("[data-map-mode]")];
   skinButtons = [...document.querySelectorAll("[data-skin-mode]")];
   meshButtons = [...document.querySelectorAll("[data-mesh-mode]")];
@@ -79,6 +87,24 @@ const hidePageLoader = () => {
 
   pageLoader.classList.add("hidden");
   document.body.classList.remove("loading");
+};
+
+const showControlsOverlay = () => {
+  if (controlsOverlay) {
+    controlsOverlay.classList.remove("hidden");
+  }
+  if (heroOverlay) {
+    heroOverlay.style.display = "none";
+  }
+};
+
+const hideControlsOverlay = () => {
+  if (controlsOverlay) {
+    controlsOverlay.classList.add("hidden");
+  }
+  if (heroOverlay) {
+    heroOverlay.style.display = "block";
+  }
 };
 
 const setButtonGroupState = (buttons, activeValue, attrName) => {
@@ -415,6 +441,20 @@ const bindControls = () => {
         setSpinEffect(!effectsState.spin);
       }
     });
+  });
+
+  safeAddEventListener(startButton, "click", () => {
+    showControlsOverlay();
+  });
+
+  safeAddEventListener(closeControls, "click", () => {
+    hideControlsOverlay();
+  });
+
+  safeAddEventListener(controlsOverlay, "click", (e) => {
+    if (e.target === controlsOverlay) {
+      hideControlsOverlay();
+    }
   });
 };
 
