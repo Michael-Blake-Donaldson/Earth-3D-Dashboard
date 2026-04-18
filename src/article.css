@@ -28,6 +28,7 @@ main {
   letter-spacing: 0.03em;
   margin: 0 0 12px;
   color: var(--color-text);
+  text-transform: uppercase;
 }
 
 .article p {
@@ -35,6 +36,11 @@ main {
   line-height: 1.75;
   color: var(--color-muted);
   margin: 0 0 14px;
+}
+
+.article-content {
+  max-width: 80ch;
+  margin: 0 auto;
 }
 
 .article p a {
@@ -46,6 +52,8 @@ main {
 .article .article-meta {
   font-size: 0.95rem;
   color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .back-button {

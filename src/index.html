@@ -31,7 +31,12 @@
     <link rel="stylesheet" href="styles.css" />
     <link rel="preconnect" href="https://cdn.babylonjs.com" />
   </head>
-  <body>
+  <body class="loading">
+    <div id="page-loader" class="page-loader" aria-live="polite" aria-label="Loading">
+      <div class="loader-core"></div>
+      <p class="loader-text">Calibrating Earth systems...</p>
+    </div>
+
     <header>
       <h1 class="title">EXPLORE EARTH</h1>
       <nav aria-label="Primary">
@@ -44,14 +49,15 @@
       <h2 class="sr-only">Interactive Earth Visualization</h2>
 
       <aside class="hero-panel">
-        <p class="eyebrow">Earth Observatory</p>
-        <h2 class="hero-title">Clean, modern planetary explorer</h2>
+        <p class="eyebrow">Planetary Signal</p>
+        <h2 class="hero-title">Human pressure is visible everywhere</h2>
         <p class="hero-copy">
-          Switch global data layers, test mesh skins, and apply live visual effects to better
-          present how Earth data can look in a premium dashboard experience.
+          Switch between maps, mesh geometries, and visual treatments to inspect Earth like an
+          interactive editorial experience.
         </p>
         <ul class="hero-points" aria-label="Current dashboard capabilities">
           <li>3 base map modes</li>
+          <li>3 mesh geometries</li>
           <li>3 mesh skins</li>
           <li>3 real-time visual effects</li>
         </ul>
@@ -122,6 +128,36 @@
                 aria-pressed="false"
               >
                 Wireframe
+              </button>
+            </div>
+          </div>
+
+          <div class="control-group" aria-label="Mesh geometry controls">
+            <p class="control-label">Mesh Geometry</p>
+            <div class="control-row">
+              <button
+                class="control-button"
+                data-mesh-mode="sphere"
+                type="button"
+                aria-pressed="true"
+              >
+                Globe
+              </button>
+              <button
+                class="control-button"
+                data-mesh-mode="icosphere"
+                type="button"
+                aria-pressed="false"
+              >
+                Geodesic
+              </button>
+              <button
+                class="control-button"
+                data-mesh-mode="poly"
+                type="button"
+                aria-pressed="false"
+              >
+                Faceted
               </button>
             </div>
           </div>

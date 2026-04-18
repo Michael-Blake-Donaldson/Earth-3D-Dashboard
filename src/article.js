@@ -1,6 +1,7 @@
 import { articles } from "./data/articles.js";
 import { normalizeQueryValue, sanitizeText } from "./utils/sanitize.js";
 
+const pageLoader = document.getElementById("page-loader");
 const articleContainer = document.getElementById("article-container");
 
 const formatArticleContent = (content) => {
@@ -56,4 +57,13 @@ if (!articleContainer) {
             `;
     }
   }
+}
+
+if (pageLoader) {
+  window.setTimeout(() => {
+    pageLoader.classList.add("hidden");
+    document.body.classList.remove("loading");
+  }, 180);
+} else {
+  document.body.classList.remove("loading");
 }

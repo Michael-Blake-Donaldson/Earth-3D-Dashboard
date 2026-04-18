@@ -30,7 +30,12 @@
     <link rel="stylesheet" href="base.css" />
     <link rel="stylesheet" href="article.css" />
   </head>
-  <body>
+  <body class="loading">
+    <div id="page-loader" class="page-loader" aria-live="polite" aria-label="Loading">
+      <div class="loader-core"></div>
+      <p class="loader-text">Rendering article brief...</p>
+    </div>
+
     <header>
       <h1 class="title">Article Details</h1>
       <nav aria-label="Primary">

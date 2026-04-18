@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Iceberg&family=Sora:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Iceberg&family=Space+Grotesk:wght@400;500;700&display=swap");
 
 :root {
   --bg-1: #052537;
@@ -35,12 +35,63 @@
 body {
   margin: 0;
   color: var(--color-text);
-  font-family: "Sora", "Segoe UI", Arial, sans-serif;
+  font-family: "Space Grotesk", "Segoe UI", Arial, sans-serif;
   min-height: 100vh;
   background:
     radial-gradient(circle at 0% 20%, rgba(39, 140, 189, 0.32), transparent 42%),
     radial-gradient(circle at 100% 5%, rgba(125, 216, 255, 0.24), transparent 44%),
     linear-gradient(140deg, var(--bg-1) 0%, var(--bg-2) 45%, var(--bg-3) 100%);
+}
+
+body.loading {
+  overflow: hidden;
+}
+
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(81, 179, 231, 0.22), transparent 40%),
+    linear-gradient(160deg, #051c29, #0a3246 60%, #0f4b64);
+  transition:
+    opacity 360ms ease,
+    visibility 360ms ease;
+}
+
+.page-loader.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader-core {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--color-accent);
+  animation: spin 950ms linear infinite;
+  box-shadow: 0 0 0 8px rgba(155, 228, 255, 0.08);
+}
+
+.loader-text {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 header {

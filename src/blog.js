@@ -3,6 +3,7 @@ import { sanitizeText } from "./utils/sanitize.js";
 import { filterArticlesByCategory } from "./utils/articles.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+  const pageLoader = document.getElementById("page-loader");
   const articlesContainer = document.getElementById("articles");
   const searchInput = document.getElementById("search-input");
   const resultsStatus = document.getElementById("results-status");
@@ -24,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return `
             <div class="article">
                 <a href="article.html?title=${encodeURIComponent(article.title)}" class="article-link" aria-label="Read ${safeTitle}">
-                    <img src="assets/articleImages/${safeImage}" alt="${safeTitle}">
+            <img src="assets/articleImages/${safeImage}" alt="${safeTitle}" loading="lazy" decoding="async" fetchpriority="low">
                     <div class="article-content">
                         <div class="article-category">${safeCategory}</div>
                         <h2 class="article-title">${safeTitle}</h2>
@@ -120,6 +121,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderArticles();
   renderCategoryFilters();
+
+  if (pageLoader) {
+    window.setTimeout(() => {
+      pageLoader.classList.add("hidden");
+      document.body.classList.remove("loading");
+    }, 180);
+  } else {
+    document.body.classList.remove("loading");
+  }
 
   if (searchInput) {
     searchInput.addEventListener("input", (event) => {

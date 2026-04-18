@@ -1,24 +1,46 @@
 const canvas = document.getElementById("renderCanvas");
 const statusLabel = document.getElementById("scene-status");
+const pageLoader = document.getElementById("page-loader");
+
 const mapButtons = [...document.querySelectorAll("[data-map-mode]")];
 const skinButtons = [...document.querySelectorAll("[data-skin-mode]")];
+const meshButtons = [...document.querySelectorAll("[data-mesh-mode]")];
 const effectButtons = [...document.querySelectorAll("[data-effect]")];
 const controlButtons = [...document.querySelectorAll(".control-button")];
 
 let engine;
 let scene;
 let camera;
-let earthGlobe;
-let populationGlobe;
-let nightGlobe;
+let earthMesh;
+let populationMesh;
+let nightMesh;
 let atmosphereShell;
 let cloudShell;
 let pipeline;
+
+let currentMapMode = "day";
+let currentSkinMode = "realistic";
 
 const effectsState = {
   atmosphere: true,
   glow: false,
   spin: false,
+};
+
+const materials = {
+  earth: null,
+  population: null,
+  night: null,
+  atmosphere: null,
+  cloud: null,
+};
+
+const safeAddEventListener = (element, eventName, handler) => {
+  if (!element || typeof element.addEventListener !== "function") {
+    return;
+  }
+
+  element.addEventListener(eventName, handler);
 };
 
 const setControlsDisabled = (disabled) => {
@@ -37,6 +59,15 @@ const hideStatus = () => {
   if (statusLabel) {
     statusLabel.style.display = "none";
   }
+};
+
+const hidePageLoader = () => {
+  if (!pageLoader) {
+    return;
+  }
+
+  pageLoader.classList.add("hidden");
+  document.body.classList.remove("loading");
 };
 
 const setButtonGroupState = (buttons, activeValue, attrName) => {
@@ -72,69 +103,137 @@ const createTexture = (path, sceneRef, onLoaded, onError) => {
   return texture;
 };
 
-const getMapMaterials = () => [earthGlobe.material, populationGlobe.material, nightGlobe.material];
+const createPlanetMesh = (name, meshMode, sceneRef, size = 1) => {
+  if (meshMode === "icosphere") {
+    return BABYLON.MeshBuilder.CreateIcoSphere(name, { radius: size, subdivisions: 4 }, sceneRef);
+  }
 
-const applySkin = (skinName) => {
-  const materials = getMapMaterials();
+  if (meshMode === "poly") {
+    return BABYLON.MeshBuilder.CreatePolyhedron(name, { type: 2, size }, sceneRef);
+  }
 
-  materials.forEach((material) => {
+  return BABYLON.MeshBuilder.CreateSphere(name, { diameter: size * 2, segments: 64 }, sceneRef);
+};
+
+const disposeCurrentMeshes = () => {
+  [earthMesh, populationMesh, nightMesh, atmosphereShell, cloudShell].forEach((mesh) => {
+    if (mesh && !mesh.isDisposed()) {
+      mesh.dispose(false, true);
+    }
+  });
+};
+
+const applyMapMode = (modeName) => {
+  currentMapMode = modeName;
+
+  if (!earthMesh || !populationMesh || !nightMesh) {
+    return;
+  }
+
+  earthMesh.isVisible = modeName === "day";
+  populationMesh.isVisible = modeName === "population";
+  nightMesh.isVisible = modeName === "night";
+  setButtonGroupState(mapButtons, modeName, "data-map-mode");
+};
+
+const applySkinMode = (skinMode) => {
+  currentSkinMode = skinMode;
+
+  const mapMaterials = [materials.earth, materials.population, materials.night];
+  mapMaterials.forEach((material) => {
+    if (!material) {
+      return;
+    }
+
     material.wireframe = false;
     material.alpha = 1;
     material.specularColor = new BABYLON.Color3(0.2, 0.24, 0.25);
     material.emissiveColor = BABYLON.Color3.Black();
   });
 
-  if (skinName === "matte") {
-    materials.forEach((material) => {
-      material.specularColor = new BABYLON.Color3(0.06, 0.08, 0.08);
+  if (skinMode === "matte") {
+    mapMaterials.forEach((material) => {
+      if (!material) {
+        return;
+      }
+
+      material.specularColor = new BABYLON.Color3(0.04, 0.06, 0.07);
       material.emissiveColor = new BABYLON.Color3(0.02, 0.05, 0.08);
     });
   }
 
-  if (skinName === "wireframe") {
-    materials.forEach((material) => {
+  if (skinMode === "wireframe") {
+    mapMaterials.forEach((material) => {
+      if (!material) {
+        return;
+      }
+
       material.wireframe = true;
       material.emissiveColor = new BABYLON.Color3(0.32, 0.7, 0.96);
     });
   }
 
-  const dayMaterial = earthGlobe.material;
-  if (dayMaterial.bumpTexture) {
-    dayMaterial.bumpTexture.level = skinName === "realistic" ? 1.1 : 0.55;
+  if (materials.earth?.bumpTexture) {
+    materials.earth.bumpTexture.level = skinMode === "realistic" ? 1.15 : 0.55;
   }
 
-  setButtonGroupState(skinButtons, skinName, "data-skin-mode");
-};
-
-const setMode = (modeName) => {
-  earthGlobe.isVisible = modeName === "day";
-  populationGlobe.isVisible = modeName === "population";
-  nightGlobe.isVisible = modeName === "night";
-
-  setButtonGroupState(mapButtons, modeName, "data-map-mode");
+  setButtonGroupState(skinButtons, skinMode, "data-skin-mode");
 };
 
 const setAtmosphereEffect = (isActive) => {
   effectsState.atmosphere = isActive;
-  atmosphereShell.isVisible = isActive;
-  cloudShell.isVisible = isActive;
+
+  if (atmosphereShell) {
+    atmosphereShell.isVisible = isActive;
+  }
+
+  if (cloudShell) {
+    cloudShell.isVisible = isActive;
+  }
+
   setEffectButtonState("atmosphere", isActive);
 };
 
 const setGlowEffect = (isActive) => {
   effectsState.glow = isActive;
+
   if (pipeline) {
     pipeline.bloomEnabled = isActive;
-    pipeline.bloomThreshold = 0.75;
-    pipeline.bloomWeight = isActive ? 0.8 : 0;
-    pipeline.bloomKernel = 68;
+    pipeline.bloomThreshold = 0.74;
+    pipeline.bloomWeight = isActive ? 0.78 : 0;
+    pipeline.bloomKernel = 64;
   }
+
   setEffectButtonState("glow", isActive);
 };
 
 const setSpinEffect = (isActive) => {
   effectsState.spin = isActive;
   setEffectButtonState("spin", isActive);
+};
+
+const buildMeshSet = (meshMode) => {
+  disposeCurrentMeshes();
+
+  earthMesh = createPlanetMesh("earthMesh", meshMode, scene, 1);
+  earthMesh.material = materials.earth;
+
+  populationMesh = createPlanetMesh("populationMesh", meshMode, scene, 1);
+  populationMesh.material = materials.population;
+
+  nightMesh = createPlanetMesh("nightMesh", meshMode, scene, 1);
+  nightMesh.material = materials.night;
+
+  atmosphereShell = createPlanetMesh("atmosphereShell", meshMode, scene, 1.045);
+  atmosphereShell.material = materials.atmosphere;
+
+  cloudShell = createPlanetMesh("cloudShell", meshMode, scene, 1.028);
+  cloudShell.material = materials.cloud;
+
+  setButtonGroupState(meshButtons, meshMode, "data-mesh-mode");
+  applyMapMode(currentMapMode);
+  setAtmosphereEffect(effectsState.atmosphere);
+  applySkinMode(currentSkinMode);
 };
 
 const createScene = () => {
@@ -154,13 +253,17 @@ const createScene = () => {
   camera.lowerBetaLimit = 0.2;
   camera.upperBetaLimit = Math.PI - 0.2;
 
-  const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), sceneRef);
-  light.intensity = 1.15;
+  const hemiLight = new BABYLON.HemisphericLight(
+    "hemiLight",
+    new BABYLON.Vector3(1, 1, 0),
+    sceneRef
+  );
+  hemiLight.intensity = 1.1;
 
-  const keyLight = new BABYLON.PointLight("key", new BABYLON.Vector3(4, 2, -4), sceneRef);
+  const keyLight = new BABYLON.PointLight("keyLight", new BABYLON.Vector3(4, 2, -4), sceneRef);
   keyLight.intensity = 0.65;
 
-  pipeline = new BABYLON.DefaultRenderingPipeline("default", false, sceneRef, [camera]);
+  pipeline = new BABYLON.DefaultRenderingPipeline("dashboardPipeline", false, sceneRef, [camera]);
 
   const texturePaths = [
     "assets/maps/earth_daymap.jpg",
@@ -171,7 +274,7 @@ const createScene = () => {
 
   let loadedTextures = 0;
   let failedTextures = 0;
-  const totalTextures = texturePaths.length;
+  const totalTextures = texturePaths.length + 1;
 
   const updateLoading = () => {
     const complete = loadedTextures + failedTextures;
@@ -184,11 +287,14 @@ const createScene = () => {
     if (failedTextures > 0) {
       setStatus(`Loaded with ${failedTextures} texture warning${failedTextures > 1 ? "s" : ""}.`);
     } else {
-      setStatus("Globe ready.");
+      setStatus("Scene ready.");
     }
 
     setControlsDisabled(false);
-    window.setTimeout(hideStatus, 1400);
+    window.setTimeout(() => {
+      hideStatus();
+      hidePageLoader();
+    }, 380);
   };
 
   const onLoaded = () => {
@@ -202,76 +308,85 @@ const createScene = () => {
     updateLoading();
   };
 
-  earthGlobe = BABYLON.MeshBuilder.CreateSphere("earthGlobe", { diameter: 2 }, sceneRef);
-  const earthMaterial = new BABYLON.StandardMaterial("earthMaterial", sceneRef);
-  earthMaterial.diffuseTexture = createTexture(texturePaths[0], sceneRef, onLoaded, onError);
-  earthMaterial.bumpTexture = createTexture(texturePaths[1], sceneRef, onLoaded, onError);
-  earthGlobe.material = earthMaterial;
+  materials.earth = new BABYLON.StandardMaterial("earthMaterial", sceneRef);
+  materials.earth.diffuseTexture = createTexture(texturePaths[0], sceneRef, onLoaded, onError);
+  materials.earth.bumpTexture = createTexture(texturePaths[1], sceneRef, onLoaded, onError);
 
-  populationGlobe = BABYLON.MeshBuilder.CreateSphere("populationGlobe", { diameter: 2 }, sceneRef);
-  const populationMaterial = new BABYLON.StandardMaterial("populationMaterial", sceneRef);
-  populationMaterial.diffuseTexture = createTexture(texturePaths[2], sceneRef, onLoaded, onError);
-  populationGlobe.material = populationMaterial;
+  materials.population = new BABYLON.StandardMaterial("populationMaterial", sceneRef);
+  materials.population.diffuseTexture = createTexture(texturePaths[2], sceneRef, onLoaded, onError);
 
-  nightGlobe = BABYLON.MeshBuilder.CreateSphere("nightGlobe", { diameter: 2 }, sceneRef);
-  const nightMaterial = new BABYLON.StandardMaterial("nightMaterial", sceneRef);
-  nightMaterial.diffuseTexture = createTexture(texturePaths[3], sceneRef, onLoaded, onError);
-  nightGlobe.material = nightMaterial;
+  materials.night = new BABYLON.StandardMaterial("nightMaterial", sceneRef);
+  materials.night.diffuseTexture = createTexture(texturePaths[3], sceneRef, onLoaded, onError);
 
-  atmosphereShell = BABYLON.MeshBuilder.CreateSphere(
-    "atmosphereShell",
-    { diameter: 2.08, segments: 64 },
-    sceneRef
-  );
-  const atmosphereMaterial = new BABYLON.StandardMaterial("atmosphereMaterial", sceneRef);
-  atmosphereMaterial.emissiveColor = new BABYLON.Color3(0.2, 0.58, 0.9);
-  atmosphereMaterial.alpha = 0.18;
-  atmosphereMaterial.backFaceCulling = false;
-  atmosphereMaterial.disableLighting = true;
-  atmosphereShell.material = atmosphereMaterial;
+  materials.atmosphere = new BABYLON.StandardMaterial("atmosphereMaterial", sceneRef);
+  materials.atmosphere.emissiveColor = new BABYLON.Color3(0.2, 0.58, 0.9);
+  materials.atmosphere.alpha = 0.18;
+  materials.atmosphere.backFaceCulling = false;
+  materials.atmosphere.disableLighting = true;
 
-  cloudShell = BABYLON.MeshBuilder.CreateSphere(
-    "cloudShell",
-    { diameter: 2.05, segments: 64 },
-    sceneRef
-  );
-  const cloudMaterial = new BABYLON.StandardMaterial("cloudMaterial", sceneRef);
-  cloudMaterial.diffuseTexture = createTexture(texturePaths[0], sceneRef, onLoaded, onError);
-  cloudMaterial.alpha = 0.14;
-  cloudMaterial.specularColor = BABYLON.Color3.Black();
-  cloudMaterial.emissiveColor = new BABYLON.Color3(0.03, 0.05, 0.08);
-  cloudShell.material = cloudMaterial;
+  materials.cloud = new BABYLON.StandardMaterial("cloudMaterial", sceneRef);
+  materials.cloud.diffuseTexture = createTexture(texturePaths[0], sceneRef, onLoaded, onError);
+  materials.cloud.alpha = 0.13;
+  materials.cloud.specularColor = BABYLON.Color3.Black();
+  materials.cloud.emissiveColor = new BABYLON.Color3(0.03, 0.05, 0.08);
 
-  setMode("day");
-  applySkin("realistic");
+  buildMeshSet("sphere");
+  applyMapMode("day");
+  applySkinMode("realistic");
   setAtmosphereEffect(true);
   setGlowEffect(false);
   setSpinEffect(false);
+
+  loadedTextures += 1;
+  updateLoading();
+
+  const sceneOptimizer = new BABYLON.SceneOptimizer(
+    sceneRef,
+    {
+      targetFrameRate: 55,
+      trackerDuration: 2000,
+    },
+    [
+      new BABYLON.HardwareScalingOptimization(0, 1.4),
+      new BABYLON.TextureOptimization(1, 256),
+      new BABYLON.ShadowsOptimization(1),
+    ]
+  );
+  sceneOptimizer.start();
 
   return sceneRef;
 };
 
 const bindControls = () => {
   mapButtons.forEach((button) => {
-    button.addEventListener("click", () => {
+    safeAddEventListener(button, "click", () => {
       const modeName = button.dataset.mapMode;
       if (modeName) {
-        setMode(modeName);
+        applyMapMode(modeName);
       }
     });
   });
 
   skinButtons.forEach((button) => {
-    button.addEventListener("click", () => {
+    safeAddEventListener(button, "click", () => {
       const skinName = button.dataset.skinMode;
       if (skinName) {
-        applySkin(skinName);
+        applySkinMode(skinName);
+      }
+    });
+  });
+
+  meshButtons.forEach((button) => {
+    safeAddEventListener(button, "click", () => {
+      const meshMode = button.dataset.meshMode;
+      if (meshMode) {
+        buildMeshSet(meshMode);
       }
     });
   });
 
   effectButtons.forEach((button) => {
-    button.addEventListener("click", () => {
+    safeAddEventListener(button, "click", () => {
       const effectName = button.dataset.effect;
       if (!effectName) {
         return;
@@ -298,8 +413,9 @@ const waitForBabylonAndStart = (retryCount = 0) => {
     return;
   }
 
-  if (retryCount > 20) {
+  if (retryCount > 28) {
     setStatus("3D engine failed to load. Please refresh the page.");
+    hidePageLoader();
     return;
   }
 
@@ -314,16 +430,31 @@ const bootstrap = () => {
     !statusLabel ||
     !mapButtons.length ||
     !skinButtons.length ||
+    !meshButtons.length ||
     !effectButtons.length
   ) {
     console.error("Required DOM nodes for globe initialization are missing.");
+    hidePageLoader();
     return;
   }
 
+  document.body.classList.add("loading");
   setControlsDisabled(true);
 
   try {
-    engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+    engine = new BABYLON.Engine(canvas, true, {
+      preserveDrawingBuffer: true,
+      stencil: true,
+      adaptToDeviceRatio: true,
+    });
+
+    const hardwareScaling = Math.min(window.devicePixelRatio || 1, 1.35);
+    engine.setHardwareScalingLevel(1 / hardwareScaling);
+
+    if (engine.getCaps().parallelShaderCompile) {
+      setStatus("Compiling shaders and loading Earth assets...");
+    }
+
     scene = createScene();
     bindControls();
 
@@ -339,13 +470,39 @@ const bootstrap = () => {
       scene.render();
     });
 
-    window.addEventListener("resize", () => {
+    safeAddEventListener(document, "visibilitychange", () => {
+      if (document.hidden) {
+        engine.stopRenderLoop();
+        return;
+      }
+
+      engine.runRenderLoop(() => {
+        if (effectsState.spin && camera) {
+          camera.alpha += 0.0016;
+        }
+
+        if (cloudShell) {
+          cloudShell.rotation.y += 0.00065;
+        }
+
+        scene.render();
+      });
+    });
+
+    safeAddEventListener(window, "resize", () => {
       engine.resize();
     });
   } catch (error) {
     console.error("Globe startup failed.", error);
     setStatus("Unable to initialize the 3D globe.");
+    hidePageLoader();
   }
 };
 
-waitForBabylonAndStart();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    waitForBabylonAndStart();
+  });
+} else {
+  waitForBabylonAndStart();
+}
