@@ -1,126 +1,81 @@
-@import url('https://fonts.googleapis.com/css2?family=Iceberg&display=swap');
-
 body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden; /* Prevent scrollbars */
-  font-family: Arial, sans-serif;
+  overflow: hidden;
 }
 
-canvas {
+main {
+  position: relative;
+  min-height: calc(100vh - 112px);
+}
+
+#renderCanvas {
   width: 100%;
-  height: 100vh;
-  display: block; /* Remove any extra space around the canvas */
+  height: calc(100vh - 112px);
+  display: block;
 }
 
-/* Header Styling */
-header {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
-  backdrop-filter: blur(10px); /* Glassmorphic blur */
-  z-index: 10;
-  padding: 10px 20px;
-  display: flex;
-  flex-direction: column; /* Stack title and navigation */
-  align-items: center; /* Center align content horizontally */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-}
-
-/* Title Styling */
-.title {
-  font-family: "Iceberg", sans-serif;
-  font-size: 36px;
-  color: #ffffff; /* White text */
-  text-transform: uppercase;
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-  margin-bottom: 10px; /* Add spacing between title and nav */
-  animation: fadeInDown 1.2s ease-in-out;
-  transition: 0.3s ease-in-out;
-}
-
-.title:hover{
-  transform: scale(110%);
-  transform: translateY(-5px);
-  color: lightblue;
-}
-
-/* Fade-in animation for the title */
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Navigation Styling */
-nav {
-  display: flex;
-  gap: 30px; /* Add spacing between menu items */
-}
-
-nav a {
-  text-decoration: none;
-  color: white; /* White text */
-  font-weight: bold;
-  font-size: 16px;
-  transition: color 0.3s ease-in-out;
-}
-
-nav a:hover {
-  color: lightblue; /* Highlight on hover */
-}
-
-
-/* Style for the buttons container */
 #buttons-container {
   position: absolute;
-  top: 200px;
-  left: 100px;
+  top: clamp(16px, 4vw, 28px);
+  left: clamp(14px, 4vw, 36px);
   display: flex;
-  flex-direction: column; /* Stack buttons vertically */
-  gap: 10px; /* Add spacing between buttons */
+  flex-direction: column;
+  gap: 10px;
+  z-index: 5;
 }
 
-/* Style for the buttons */
 button {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, lightblue, steelblue); /* Modern gradient */
-  color: white; /* White text */
-  border: none;
-  border-radius: 8px; /* Rounded corners */
+  padding: 12px 22px;
+  background: linear-gradient(135deg, var(--color-sky), var(--color-ocean));
+  color: #fff;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: var(--shadow-card);
+  min-width: 180px;
 }
 
-/* Hover effect for buttons */
 button:hover {
-  background: linear-gradient(135deg, steelblue, lightblue); /* Slightly darker gradient */
-  transform: scale(1.05); /* Slightly enlarge on hover */
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 18px rgba(10, 44, 67, 0.3);
 }
 
-/* Active effect for buttons */
 button:active {
-  transform: scale(0.95); /* Shrink slightly on click */
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); /* Adjust shadow on click */
+  transform: scale(0.98);
 }
 
+button.active {
+  background: linear-gradient(135deg, #bce9ff, #4f95c7);
+  box-shadow: 0 0 0 2px rgba(232, 246, 255, 0.5);
+}
+
+@media (max-width: 1024px) {
+  main {
+    min-height: calc(100vh - 100px);
+  }
+
+  #renderCanvas {
+    height: calc(100vh - 100px);
+  }
+}
 
 @media (max-width: 768px) {
   #buttons-container {
-    top: 100px;
-    left: 20px;
+    top: auto;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    flex-direction: row;
   }
 
-  .title {
-    font-size: 24px;
+  button {
+    flex: 1;
+    min-width: 0;
+    padding: 11px 12px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #buttons-container {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
