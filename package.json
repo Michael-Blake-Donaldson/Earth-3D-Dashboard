@@ -1,9 +1,16 @@
 {
   "name": "earth-3d-dashboard",
   "version": "1.0.0",
+  "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "start": "lite-server"
+    "start": "lite-server",
+    "lint": "eslint src tests --ext .js",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run lint && npm run format:check && npm run test"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +20,11 @@
     "@babylonjs/core": "^7.35.1",
     "@babylonjs/gui": "^7.35.1",
     "@babylonjs/loaders": "^7.35.1",
-    "babylonjs": "^7.35.1",
-    "earth-3d-dashboard": "file:"
+    "babylonjs": "^7.35.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.24.0",
+    "prettier": "^3.5.3",
+    "vitest": "^3.1.1"
   }
 }

@@ -4,21 +4,24 @@ import { normalizeQueryValue, sanitizeText } from "./utils/sanitize.js";
 const articleContainer = document.getElementById("article-container");
 
 const formatArticleContent = (content) => {
-    const safeContent = sanitizeText(content)
-        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-        .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  const safeContent = sanitizeText(content)
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(
+      /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
 
-    // Render each text block as a paragraph while preserving line breaks between ideas.
-    return safeContent
-        .split(/\n\s*\n/)
-        .map((paragraph) => paragraph.replace(/\n/g, " ").trim())
-        .filter(Boolean)
-        .map((paragraph) => `<p>${paragraph}</p>`)
-        .join("");
+  // Render each text block as a paragraph while preserving line breaks between ideas.
+  return safeContent
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.replace(/\n/g, " ").trim())
+    .filter(Boolean)
+    .map((paragraph) => `<p>${paragraph}</p>`)
+    .join("");
 };
 
 const renderNotFound = (message) => {
-    articleContainer.innerHTML = `
+  articleContainer.innerHTML = `
         <article class="article">
             <h2>Article Not Found</h2>
             <p>${sanitizeText(message)}</p>
@@ -28,20 +31,20 @@ const renderNotFound = (message) => {
 };
 
 if (!articleContainer) {
-    console.error('Element with id "article-container" not found.');
+  console.error('Element with id "article-container" not found.');
 } else {
-    const params = new URLSearchParams(window.location.search);
-    const articleTitle = normalizeQueryValue(params.get("title"));
+  const params = new URLSearchParams(window.location.search);
+  const articleTitle = normalizeQueryValue(params.get("title"));
 
-    if (!articleTitle) {
-        renderNotFound("No article title was provided in the URL.");
+  if (!articleTitle) {
+    renderNotFound("No article title was provided in the URL.");
+  } else {
+    const article = articles.find((entry) => entry.title === articleTitle);
+
+    if (!article) {
+      renderNotFound(`No article matched the title "${articleTitle}".`);
     } else {
-        const article = articles.find((entry) => entry.title === articleTitle);
-
-        if (!article) {
-            renderNotFound(`No article matched the title "${articleTitle}".`);
-        } else {
-            articleContainer.innerHTML = `
+      articleContainer.innerHTML = `
                 <article class="article">
                     <img src="assets/articleImages/${sanitizeText(article.image)}" alt="${sanitizeText(article.title)}">
                     <div class="article-content">
@@ -51,7 +54,6 @@ if (!articleContainer) {
                     </div>
                 </article>
             `;
-        }
     }
+  }
 }
-

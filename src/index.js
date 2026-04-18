@@ -78,7 +78,7 @@ const createScene = () => {
     "assets/maps/earth_daymap.jpg",
     "assets/maps/earth_normal_map.jpeg",
     "assets/maps/pop_density_map.jpg",
-    "assets/maps/earth_nightmap.jpg"
+    "assets/maps/earth_nightmap.jpg",
   ];
 
   let loadedTextures = 0;

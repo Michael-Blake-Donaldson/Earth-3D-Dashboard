@@ -64,7 +64,9 @@ main {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
   overflow: hidden;
-  transition: transform 220ms ease, box-shadow 220ms ease;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
 }
 
 .article:hover {
@@ -150,4 +152,3 @@ main {
     justify-content: flex-start;
   }
 }
-
