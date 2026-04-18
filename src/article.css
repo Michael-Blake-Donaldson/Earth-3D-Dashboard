@@ -2,7 +2,8 @@ main {
   max-width: 1080px;
   margin: 32px auto 18px;
   padding: 22px;
-  background: var(--glass-surface);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
   backdrop-filter: blur(10px);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
@@ -26,6 +27,7 @@ main {
   font-family: "Iceberg", sans-serif;
   letter-spacing: 0.03em;
   margin: 0 0 12px;
+  color: var(--color-text);
 }
 
 .article p {
@@ -43,16 +45,16 @@ main {
 
 .article .article-meta {
   font-size: 0.95rem;
-  color: var(--color-ice);
+  color: var(--color-accent);
 }
 
 .back-button {
   display: inline-block;
   margin: 0 auto 24px;
-  padding: 10px 20px;
+  padding: 10px 22px;
   font-size: 1rem;
-  color: #fff;
-  background: linear-gradient(135deg, var(--color-sky), var(--color-ocean));
+  color: #042334;
+  background: var(--color-accent);
   text-decoration: none;
   box-shadow: var(--shadow-card);
 }

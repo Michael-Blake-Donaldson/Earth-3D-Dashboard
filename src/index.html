@@ -40,26 +40,113 @@
       </nav>
     </header>
 
-    <main>
+    <main class="dashboard-layout">
       <h2 class="sr-only">Interactive Earth Visualization</h2>
-      <div id="buttons-container" aria-label="Map controls">
-        <button id="togglePopulationMap" type="button" aria-pressed="false" disabled>
-          Population Density
-        </button>
-        <button id="toggleNightEarthMap" type="button" aria-pressed="false" disabled>
-          Day vs Night
-        </button>
-      </div>
 
-      <p id="scene-status" class="scene-status" aria-live="polite">Loading 3D globe textures...</p>
+      <aside class="hero-panel">
+        <p class="eyebrow">Earth Observatory</p>
+        <h2 class="hero-title">Clean, modern planetary explorer</h2>
+        <p class="hero-copy">
+          Switch global data layers, test mesh skins, and apply live visual effects to better
+          present how Earth data can look in a premium dashboard experience.
+        </p>
+        <ul class="hero-points" aria-label="Current dashboard capabilities">
+          <li>3 base map modes</li>
+          <li>3 mesh skins</li>
+          <li>3 real-time visual effects</li>
+        </ul>
+      </aside>
 
-      <canvas
-        id="renderCanvas"
-        role="img"
-        aria-label="3D Earth model showing selectable map overlays"
-      >
-        Your browser does not support canvas. Open the Blog page for accessible article content.
-      </canvas>
+      <section class="globe-stage" aria-label="Interactive globe workspace">
+        <p id="scene-status" class="scene-status" aria-live="polite">
+          Loading 3D globe textures...
+        </p>
+
+        <canvas
+          id="renderCanvas"
+          role="img"
+          aria-label="3D Earth model showing selectable map overlays"
+        >
+          Your browser does not support canvas. Open the Blog page for accessible article content.
+        </canvas>
+
+        <section id="controls-dock" class="controls-dock" aria-label="Globe controls">
+          <div class="control-group" aria-label="Map mode controls">
+            <p class="control-label">Map Mode</p>
+            <div class="control-row">
+              <button class="control-button" data-map-mode="day" type="button" aria-pressed="true">
+                Day
+              </button>
+              <button
+                class="control-button"
+                data-map-mode="population"
+                type="button"
+                aria-pressed="false"
+              >
+                Population
+              </button>
+              <button
+                class="control-button"
+                data-map-mode="night"
+                type="button"
+                aria-pressed="false"
+              >
+                Night
+              </button>
+            </div>
+          </div>
+
+          <div class="control-group" aria-label="Mesh skin controls">
+            <p class="control-label">Mesh Skin</p>
+            <div class="control-row">
+              <button
+                class="control-button"
+                data-skin-mode="realistic"
+                type="button"
+                aria-pressed="true"
+              >
+                Realistic
+              </button>
+              <button
+                class="control-button"
+                data-skin-mode="matte"
+                type="button"
+                aria-pressed="false"
+              >
+                Matte
+              </button>
+              <button
+                class="control-button"
+                data-skin-mode="wireframe"
+                type="button"
+                aria-pressed="false"
+              >
+                Wireframe
+              </button>
+            </div>
+          </div>
+
+          <div class="control-group" aria-label="Visual effect controls">
+            <p class="control-label">Effects</p>
+            <div class="control-row">
+              <button
+                class="control-button"
+                data-effect="atmosphere"
+                type="button"
+                aria-pressed="true"
+              >
+                Atmosphere
+              </button>
+              <button class="control-button" data-effect="glow" type="button" aria-pressed="false">
+                Glow
+              </button>
+              <button class="control-button" data-effect="spin" type="button" aria-pressed="false">
+                Auto Spin
+              </button>
+            </div>
+          </div>
+        </section>
+      </section>
     </main>
 
     <script src="https://cdn.babylonjs.com/babylon.js" defer></script>
