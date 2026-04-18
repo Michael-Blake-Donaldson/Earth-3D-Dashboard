@@ -1,12 +1,23 @@
-const canvas = document.getElementById("renderCanvas");
-const statusLabel = document.getElementById("scene-status");
-const pageLoader = document.getElementById("page-loader");
+let canvas;
+let statusLabel;
+let pageLoader;
 
-const mapButtons = [...document.querySelectorAll("[data-map-mode]")];
-const skinButtons = [...document.querySelectorAll("[data-skin-mode]")];
-const meshButtons = [...document.querySelectorAll("[data-mesh-mode]")];
-const effectButtons = [...document.querySelectorAll("[data-effect]")];
-const controlButtons = [...document.querySelectorAll(".control-button")];
+let mapButtons = [];
+let skinButtons = [];
+let meshButtons = [];
+let effectButtons = [];
+let controlButtons = [];
+
+const initDomRefs = () => {
+  canvas = document.getElementById("renderCanvas");
+  statusLabel = document.getElementById("scene-status");
+  pageLoader = document.getElementById("page-loader");
+  mapButtons = [...document.querySelectorAll("[data-map-mode]")];
+  skinButtons = [...document.querySelectorAll("[data-skin-mode]")];
+  meshButtons = [...document.querySelectorAll("[data-mesh-mode]")];
+  effectButtons = [...document.querySelectorAll("[data-effect]")];
+  controlButtons = [...document.querySelectorAll(".control-button")];
+};
 
 let engine;
 let scene;
@@ -408,6 +419,7 @@ const bindControls = () => {
 };
 
 const waitForBabylonAndStart = (retryCount = 0) => {
+  initDomRefs();
   if (window.BABYLON) {
     bootstrap();
     return;
