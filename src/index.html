@@ -31,9 +31,11 @@
   <main>
     <h2 class="sr-only">Interactive Earth Visualization</h2>
     <div id="buttons-container" aria-label="Map controls">
-      <button id="togglePopulationMap" type="button" aria-pressed="false">Population Density</button>
-      <button id="toggleNightEarthMap" type="button" aria-pressed="false">Day vs Night</button>
+      <button id="togglePopulationMap" type="button" aria-pressed="false" disabled>Population Density</button>
+      <button id="toggleNightEarthMap" type="button" aria-pressed="false" disabled>Day vs Night</button>
     </div>
+
+    <p id="scene-status" class="scene-status" aria-live="polite">Loading 3D globe textures...</p>
 
     <canvas id="renderCanvas" role="img" aria-label="3D Earth model showing selectable map overlays">
       Your browser does not support canvas. Open the Blog page for accessible article content.

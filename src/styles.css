@@ -23,6 +23,20 @@ main {
   z-index: 5;
 }
 
+.scene-status {
+  position: absolute;
+  top: clamp(14px, 3.5vw, 26px);
+  right: clamp(14px, 4vw, 34px);
+  z-index: 6;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(9, 33, 51, 0.35);
+  color: var(--color-ice);
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+}
+
 button {
   padding: 12px 22px;
   background: linear-gradient(135deg, var(--color-sky), var(--color-ocean));
@@ -46,6 +60,13 @@ button.active {
   box-shadow: 0 0 0 2px rgba(232, 246, 255, 0.5);
 }
 
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 @media (max-width: 1024px) {
   main {
     min-height: calc(100vh - 100px);
@@ -57,6 +78,13 @@ button.active {
 }
 
 @media (max-width: 768px) {
+  .scene-status {
+    right: 16px;
+    left: 16px;
+    top: 16px;
+    text-align: center;
+  }
+
   #buttons-container {
     top: auto;
     bottom: 16px;

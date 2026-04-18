@@ -1,108 +1,179 @@
-// Get the canvas element
 const canvas = document.getElementById("renderCanvas");
+const statusLabel = document.getElementById("scene-status");
+const populationMapButton = document.getElementById("togglePopulationMap");
+const nightMapButton = document.getElementById("toggleNightEarthMap");
 
-// Create the Babylon.js engine
-const engine = new BABYLON.Engine(canvas, true);
+let engine;
+let scene;
+let earthGlobe;
+let populationGlobe;
+let nightEarthGlobe;
+let mode = "day";
 
-// Declare global variables for the two globes
-let earthGlobe, populationGlobe, nightEarthGlobe;
-
-// Create the scene
-const createScene = () => {
-  const scene = new BABYLON.Scene(engine);
-
-  // Add a camera
-  const camera = new BABYLON.ArcRotateCamera(
-    "camera",
-    Math.PI / 2, // Alpha (horizontal rotation)
-    Math.PI / 2, // Beta (vertical rotation)
-    5,           // Zoom distance
-    new BABYLON.Vector3(0, 0, 0), // Target position (center of the globe)
-    scene
-  );
-  camera.attachControl(canvas, true);
-
-  // Set limits for zoom and rotation
-  camera.lowerRadiusLimit = 2;   // Minimum zoom distance
-  camera.upperRadiusLimit = 10;  // Maximum zoom distance
-  camera.lowerBetaLimit = 0.1;   // Limit how far up the user can rotate
-  camera.upperBetaLimit = Math.PI - 0.1; // Limit how far down the user can rotate
-
-  // Add a light
-  const light = new BABYLON.HemisphericLight(
-    "light",
-    new BABYLON.Vector3(1, 1, 0),
-    scene
-  );
-  light.intensity = 1.2; // Brighten the scene
-
-  // Create the Earth globe
-  earthGlobe = BABYLON.MeshBuilder.CreateSphere("earthGlobe", { diameter: 2 }, scene);
-  const earthMaterial = new BABYLON.StandardMaterial("earthMaterial", scene);
-  earthMaterial.diffuseTexture = new BABYLON.Texture("assets/maps/earth_daymap.jpg", scene);
-  earthMaterial.diffuseTexture.vScale = -1; // Flip vertically
-  earthMaterial.bumpTexture = new BABYLON.Texture("assets/maps/earth_normal_map.jpeg", scene);
-  earthMaterial.bumpTexture.vScale = -1; // Flip vertically
-  earthGlobe.material = earthMaterial;
-
-  // Create the Population Density globe
-  populationGlobe = BABYLON.MeshBuilder.CreateSphere("populationGlobe", { diameter: 2 }, scene);
-  const populationMaterial = new BABYLON.StandardMaterial("populationMaterial", scene);
-  populationMaterial.diffuseTexture = new BABYLON.Texture("assets/maps/pop_density_map.jpg", scene);
-  populationMaterial.diffuseTexture.vScale = -1; // Flip vertically
-  populationMaterial.alpha = 1; // Fully opaque for testing
-  populationGlobe.material = populationMaterial;
-
-  // Initially hide the Population Density globe
-  populationGlobe.isVisible = false;
-
-  // Create the Night Time Earth globe
-  nightEarthGlobe = BABYLON.MeshBuilder.CreateSphere("nightEarthGlobe", { diameter: 2 }, scene);
-  const nightEarthMaterial = new BABYLON.StandardMaterial("nightEarthMaterial", scene);
-  nightEarthMaterial.diffuseTexture = new BABYLON.Texture("assets/maps/earth_nightmap.jpg", scene);
-  nightEarthMaterial.diffuseTexture.vScale = -1; // Flip vertically
-  nightEarthMaterial.alpha = 1; // Fully opaque for testing
-  nightEarthGlobe.material = nightEarthMaterial;
-
-  // Initially hide the Population Density globe
-  nightEarthGlobe.isVisible = false;
-
-  return scene;
+const setControlsDisabled = (disabled) => {
+  populationMapButton.disabled = disabled;
+  nightMapButton.disabled = disabled;
 };
 
-// Create and render the scene
-const scene = createScene();
-engine.runRenderLoop(() => {
-  scene.render();
-});
+const setStatus = (message) => {
+  statusLabel.textContent = message;
+};
 
-// Resize the engine on window resize
-window.addEventListener("resize", () => {
-  engine.resize();
-});
+const hideStatus = () => {
+  statusLabel.style.display = "none";
+};
 
-// Toggle population map button logic
-const populationMapButton = document.getElementById("togglePopulationMap");
-let isPopulationMapVisible = false;
+const setMode = (nextMode) => {
+  mode = nextMode;
 
-populationMapButton.addEventListener("click", () => {
-  // Toggle visibility of the two globes
-  earthGlobe.isVisible = !isPopulationMapVisible;
-  populationGlobe.isVisible = isPopulationMapVisible;
+  earthGlobe.isVisible = mode === "day";
+  populationGlobe.isVisible = mode === "population";
+  nightEarthGlobe.isVisible = mode === "night";
 
-  // Flip the visibility flag
-  isPopulationMapVisible = !isPopulationMapVisible;
-});
+  const isPopulation = mode === "population";
+  const isNight = mode === "night";
 
-// Toggle night map button logic
-const nightMapButton = document.getElementById("toggleNightEarthMap");
-let isnightMapVisible = false;
+  populationMapButton.classList.toggle("active", isPopulation);
+  nightMapButton.classList.toggle("active", isNight);
+  populationMapButton.setAttribute("aria-pressed", String(isPopulation));
+  nightMapButton.setAttribute("aria-pressed", String(isNight));
+};
 
-nightMapButton.addEventListener("click", () => {
-  // Toggle visibility of the two globes
-  earthGlobe.isVisible = !isnightMapVisible;
-  nightEarthGlobe.isVisible = isnightMapVisible;
+const createTexture = (path, sceneRef, onLoaded, onError) => {
+  const texture = new BABYLON.Texture(
+    path,
+    sceneRef,
+    false,
+    true,
+    BABYLON.Texture.TRILINEAR_SAMPLINGMODE,
+    () => onLoaded(path),
+    (message, exception) => onError(path, message, exception)
+  );
 
-  // Flip the visibility flag
-  isnightMapVisible = !isnightMapVisible;
-});
+  texture.vScale = -1;
+  return texture;
+};
+
+const createScene = () => {
+  const sceneRef = new BABYLON.Scene(engine);
+
+  const camera = new BABYLON.ArcRotateCamera(
+    "camera",
+    Math.PI / 2,
+    Math.PI / 2,
+    5,
+    new BABYLON.Vector3(0, 0, 0),
+    sceneRef
+  );
+  camera.attachControl(canvas, true);
+  camera.lowerRadiusLimit = 2;
+  camera.upperRadiusLimit = 10;
+  camera.lowerBetaLimit = 0.1;
+  camera.upperBetaLimit = Math.PI - 0.1;
+
+  const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), sceneRef);
+  light.intensity = 1.2;
+
+  const texturePaths = [
+    "assets/maps/earth_daymap.jpg",
+    "assets/maps/earth_normal_map.jpeg",
+    "assets/maps/pop_density_map.jpg",
+    "assets/maps/earth_nightmap.jpg"
+  ];
+
+  let loadedTextures = 0;
+  let failedTextures = 0;
+
+  const totalTextures = texturePaths.length;
+
+  const updateLoading = () => {
+    const complete = loadedTextures + failedTextures;
+
+    if (complete < totalTextures) {
+      setStatus(`Loading 3D globe textures (${complete}/${totalTextures})...`);
+      return;
+    }
+
+    if (failedTextures > 0) {
+      setStatus(`Loaded with ${failedTextures} texture warning${failedTextures > 1 ? "s" : ""}.`);
+    } else {
+      setStatus("Globe ready.");
+    }
+
+    setControlsDisabled(false);
+    window.setTimeout(hideStatus, 1400);
+  };
+
+  const onLoaded = () => {
+    loadedTextures += 1;
+    updateLoading();
+  };
+
+  const onError = (path, message) => {
+    failedTextures += 1;
+    console.error(`Failed to load texture: ${path}`, message);
+    updateLoading();
+  };
+
+  earthGlobe = BABYLON.MeshBuilder.CreateSphere("earthGlobe", { diameter: 2 }, sceneRef);
+  const earthMaterial = new BABYLON.StandardMaterial("earthMaterial", sceneRef);
+  earthMaterial.diffuseTexture = createTexture(texturePaths[0], sceneRef, onLoaded, onError);
+  earthMaterial.bumpTexture = createTexture(texturePaths[1], sceneRef, onLoaded, onError);
+  earthMaterial.bumpTexture.vScale = -1;
+  earthGlobe.material = earthMaterial;
+
+  populationGlobe = BABYLON.MeshBuilder.CreateSphere("populationGlobe", { diameter: 2 }, sceneRef);
+  const populationMaterial = new BABYLON.StandardMaterial("populationMaterial", sceneRef);
+  populationMaterial.diffuseTexture = createTexture(texturePaths[2], sceneRef, onLoaded, onError);
+  populationMaterial.alpha = 1;
+  populationGlobe.material = populationMaterial;
+
+  nightEarthGlobe = BABYLON.MeshBuilder.CreateSphere("nightEarthGlobe", { diameter: 2 }, sceneRef);
+  const nightEarthMaterial = new BABYLON.StandardMaterial("nightEarthMaterial", sceneRef);
+  nightEarthMaterial.diffuseTexture = createTexture(texturePaths[3], sceneRef, onLoaded, onError);
+  nightEarthMaterial.alpha = 1;
+  nightEarthGlobe.material = nightEarthMaterial;
+
+  setMode("day");
+  return sceneRef;
+};
+
+const bootstrap = () => {
+  if (!canvas || !populationMapButton || !nightMapButton || !statusLabel) {
+    console.error("Required DOM nodes for globe initialization are missing.");
+    return;
+  }
+
+  setControlsDisabled(true);
+
+  if (!window.BABYLON) {
+    setStatus("3D engine failed to load. Please refresh the page.");
+    return;
+  }
+
+  try {
+    engine = new BABYLON.Engine(canvas, true);
+    scene = createScene();
+
+    engine.runRenderLoop(() => {
+      scene.render();
+    });
+
+    window.addEventListener("resize", () => {
+      engine.resize();
+    });
+
+    populationMapButton.addEventListener("click", () => {
+      setMode(mode === "population" ? "day" : "population");
+    });
+
+    nightMapButton.addEventListener("click", () => {
+      setMode(mode === "night" ? "day" : "night");
+    });
+  } catch (error) {
+    console.error("Globe startup failed.", error);
+    setStatus("Unable to initialize the 3D globe.");
+  }
+};
+
+bootstrap();
