@@ -88,10 +88,44 @@
 }
 
 .hero-content {
+  position: relative;
+  isolation: isolate;
+  --reengage-progress: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 32px;
+}
+
+.hero-content::after {
+  content: "";
+  position: absolute;
+  inset: -26px -36px;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgba(141, 216, 255, 0.98) calc(var(--reengage-progress) * 1turn),
+    rgba(141, 216, 255, 0.15) 0
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 180ms ease,
+    transform 240ms ease;
+  pointer-events: none;
+}
+
+.hero-content.menu-arming::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.hero-content.menu-ready {
+  box-shadow:
+    0 0 0 1px rgba(141, 216, 255, 0.44),
+    0 0 38px rgba(96, 167, 255, 0.24);
+  border-radius: 24px;
 }
 
 .logo-mark {
@@ -146,10 +180,6 @@
 }
 
 .hero-cta {
-  position: relative;
-  isolation: isolate;
-  overflow: visible;
-  --reengage-progress: 0;
   margin-top: 8px;
   padding: 12px 32px;
   font-size: 0.8rem;
@@ -163,36 +193,6 @@
   transition: all var(--ease-standard);
   pointer-events: auto;
   animation: fadeIn 600ms ease 600ms both;
-}
-
-.hero-cta::before {
-  content: "";
-  position: absolute;
-  inset: -12px;
-  border-radius: 999px;
-  background: conic-gradient(
-    rgba(141, 216, 255, 0.98) calc(var(--reengage-progress) * 1turn),
-    rgba(141, 216, 255, 0.14) 0
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
-  opacity: 0;
-  transform: scale(0.96);
-  transition:
-    opacity 180ms ease,
-    transform 240ms ease;
-  pointer-events: none;
-}
-
-.hero-cta.menu-arming::before {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.hero-cta.menu-ready {
-  box-shadow:
-    0 0 0 1px rgba(141, 216, 255, 0.6),
-    0 0 28px rgba(96, 167, 255, 0.32);
 }
 
 .hero-cta:hover {

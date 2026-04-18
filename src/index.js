@@ -2,6 +2,7 @@ let canvas;
 let statusLabel;
 let pageLoader;
 let heroOverlay;
+let heroContent;
 let controlsOverlay;
 let startButton;
 let confirmControls;
@@ -17,6 +18,7 @@ const initDomRefs = () => {
   statusLabel = document.getElementById("scene-status");
   pageLoader = document.getElementById("page-loader");
   heroOverlay = document.querySelector(".hero-overlay");
+  heroContent = document.querySelector(".hero-content");
   controlsOverlay = document.getElementById("controls-overlay");
   startButton = document.getElementById("start-button");
   confirmControls = document.getElementById("confirm-controls");
@@ -104,11 +106,11 @@ const hidePageLoader = () => {
 };
 
 const setMenuReengageProgress = (value) => {
-  if (!startButton) {
+  if (!heroContent) {
     return;
   }
 
-  startButton.style.setProperty("--reengage-progress", String(value));
+  heroContent.style.setProperty("--reengage-progress", String(value));
 };
 
 const resetMenuReengageState = () => {
@@ -120,8 +122,8 @@ const resetMenuReengageState = () => {
   isMenuReengageInProgress = false;
   isMenuReengageReady = false;
 
-  if (startButton) {
-    startButton.classList.remove("menu-arming", "menu-ready");
+  if (heroContent) {
+    heroContent.classList.remove("menu-arming", "menu-ready");
   }
 
   setMenuReengageProgress(0);
@@ -158,13 +160,13 @@ const beginMenuReengageSequence = () => {
     return;
   }
 
-  if (!startButton) {
+  if (!heroContent) {
     return;
   }
 
   isMenuReengageInProgress = true;
-  startButton.classList.remove("menu-ready");
-  startButton.classList.add("menu-arming");
+  heroContent.classList.remove("menu-ready");
+  heroContent.classList.add("menu-arming");
   setMenuReengageProgress(0);
 
   const durationMs = 1200;
@@ -182,8 +184,8 @@ const beginMenuReengageSequence = () => {
     menuReengageFrameId = 0;
     isMenuReengageInProgress = false;
     isMenuReengageReady = true;
-    startButton.classList.remove("menu-arming");
-    startButton.classList.add("menu-ready");
+    heroContent.classList.remove("menu-arming");
+    heroContent.classList.add("menu-ready");
 
     if (heroOverlay) {
       heroOverlay.classList.remove("drift-away");
@@ -205,8 +207,8 @@ const showControlsOverlay = () => {
     heroOverlay.classList.add("menu-reengage");
   }
 
-  if (startButton) {
-    startButton.classList.remove("menu-arming", "menu-ready");
+  if (heroContent) {
+    heroContent.classList.remove("menu-arming", "menu-ready");
   }
 
   setMenuReengageProgress(0);
