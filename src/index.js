@@ -1006,7 +1006,7 @@ const bindControls = () => {
     showControlsOverlay();
   });
 
-  safeAddEventListener(startButton, "mouseenter", () => {
+  safeAddEventListener(heroContent, "mouseenter", () => {
     if (!hasEnteredViewingMode || !controlsOverlay?.classList.contains("hidden")) {
       return;
     }
@@ -1014,7 +1014,7 @@ const bindControls = () => {
     beginMenuReengageSequence();
   });
 
-  safeAddEventListener(startButton, "focus", () => {
+  safeAddEventListener(heroContent, "focusin", () => {
     if (!hasEnteredViewingMode || !controlsOverlay?.classList.contains("hidden")) {
       return;
     }
