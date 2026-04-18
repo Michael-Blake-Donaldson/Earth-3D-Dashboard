@@ -40,6 +40,10 @@ let currentMeshMode = "sphere";
 let pendingSelection = null;
 let isApplyingSelection = false;
 let hasEnteredViewingMode = false;
+let radiusBeforeMenuOpen = null;
+let isMenuReengageInProgress = false;
+let isMenuReengageReady = false;
+let menuReengageFrameId = 0;
 
 const meshSetCache = {
   sphere: null,
@@ -99,10 +103,119 @@ const hidePageLoader = () => {
   document.body.classList.remove("loading");
 };
 
+const setMenuReengageProgress = (value) => {
+  if (!startButton) {
+    return;
+  }
+
+  startButton.style.setProperty("--reengage-progress", String(value));
+};
+
+const resetMenuReengageState = () => {
+  if (menuReengageFrameId) {
+    window.cancelAnimationFrame(menuReengageFrameId);
+    menuReengageFrameId = 0;
+  }
+
+  isMenuReengageInProgress = false;
+  isMenuReengageReady = false;
+
+  if (startButton) {
+    startButton.classList.remove("menu-arming", "menu-ready");
+  }
+
+  setMenuReengageProgress(0);
+};
+
+const animateCameraRadius = (targetRadius, frameCount = 26) => {
+  if (!camera) {
+    return;
+  }
+
+  if (!scene || !BABYLON?.Animation?.CreateAndStartAnimation) {
+    camera.radius = targetRadius;
+    return;
+  }
+
+  BABYLON.Animation.CreateAndStartAnimation(
+    "cameraRadiusTransition",
+    camera,
+    "radius",
+    60,
+    frameCount,
+    camera.radius,
+    targetRadius,
+    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+  );
+};
+
+const beginMenuReengageSequence = () => {
+  if (!hasEnteredViewingMode || isMenuReengageReady || isMenuReengageInProgress) {
+    return;
+  }
+
+  if (!controlsOverlay?.classList.contains("hidden")) {
+    return;
+  }
+
+  if (!startButton) {
+    return;
+  }
+
+  isMenuReengageInProgress = true;
+  startButton.classList.remove("menu-ready");
+  startButton.classList.add("menu-arming");
+  setMenuReengageProgress(0);
+
+  const durationMs = 1200;
+  const startedAt = performance.now();
+
+  const tick = (timestamp) => {
+    const progress = Math.min((timestamp - startedAt) / durationMs, 1);
+    setMenuReengageProgress(progress);
+
+    if (progress < 1) {
+      menuReengageFrameId = window.requestAnimationFrame(tick);
+      return;
+    }
+
+    menuReengageFrameId = 0;
+    isMenuReengageInProgress = false;
+    isMenuReengageReady = true;
+    startButton.classList.remove("menu-arming");
+    startButton.classList.add("menu-ready");
+
+    if (heroOverlay) {
+      heroOverlay.classList.remove("drift-away");
+      heroOverlay.classList.add("menu-reengage");
+    }
+  };
+
+  menuReengageFrameId = window.requestAnimationFrame(tick);
+};
+
 const showControlsOverlay = () => {
   if (controlsOverlay) {
     controlsOverlay.classList.remove("hidden");
     controlsOverlay.setAttribute("aria-hidden", "false");
+  }
+
+  if (heroOverlay) {
+    heroOverlay.classList.remove("drift-away");
+    heroOverlay.classList.add("menu-reengage");
+  }
+
+  if (startButton) {
+    startButton.classList.remove("menu-arming", "menu-ready");
+  }
+
+  setMenuReengageProgress(0);
+
+  if (hasEnteredViewingMode && camera) {
+    radiusBeforeMenuOpen = camera.radius;
+    const maxRadius = Math.max((camera.upperRadiusLimit || 11) - 0.2, camera.radius);
+    const zoomedOutRadius = Math.min(maxRadius, camera.radius + 1.2);
+    animateCameraRadius(zoomedOutRadius, 20);
   }
 
   pendingSelection = {
@@ -131,8 +244,18 @@ const hideControlsOverlay = () => {
   }
 
   if (heroOverlay) {
+    heroOverlay.classList.remove("menu-reengage");
     heroOverlay.classList.add("drift-away");
   }
+
+  if (hasEnteredViewingMode && camera && radiusBeforeMenuOpen !== null) {
+    animateCameraRadius(radiusBeforeMenuOpen, 24);
+  }
+
+  radiusBeforeMenuOpen = null;
+
+  // After each completed menu cycle, require one re-engage sequence before next open.
+  resetMenuReengageState();
 
   hasEnteredViewingMode = true;
 };
@@ -873,7 +996,28 @@ const bindControls = () => {
   });
 
   safeAddEventListener(startButton, "click", () => {
+    if (hasEnteredViewingMode && !isMenuReengageReady) {
+      beginMenuReengageSequence();
+      return;
+    }
+
     showControlsOverlay();
+  });
+
+  safeAddEventListener(startButton, "mouseenter", () => {
+    if (!hasEnteredViewingMode || !controlsOverlay?.classList.contains("hidden")) {
+      return;
+    }
+
+    beginMenuReengageSequence();
+  });
+
+  safeAddEventListener(startButton, "focus", () => {
+    if (!hasEnteredViewingMode || !controlsOverlay?.classList.contains("hidden")) {
+      return;
+    }
+
+    beginMenuReengageSequence();
   });
 
   safeAddEventListener(confirmControls, commitControlsSelectionAndExit);
