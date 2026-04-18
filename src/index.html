@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="styles.css" />
     <link rel="preconnect" href="https://cdn.babylonjs.com" />
   </head>
-  <body class="loading">
+  <body class="loading home-space">
     <div id="page-loader" class="page-loader" aria-live="polite" aria-label="Loading">
       <div class="loader-core"></div>
       <p class="loader-text">Initializing planetary visualization...</p>
@@ -76,8 +76,12 @@
 
       <div id="scene-status" aria-live="polite" aria-label="Scene status"></div>
 
-      <section id="controls-overlay" class="controls-overlay hidden" aria-label="Globe controls">
-        <button class="close-controls" id="close-controls" aria-label="Close controls">✕</button>
+      <section
+        id="controls-overlay"
+        class="controls-overlay hidden"
+        aria-label="Globe controls"
+        aria-hidden="true"
+      >
 
         <section id="controls-dock" class="controls-dock" aria-label="Globe interaction controls">
           <div class="control-group" aria-label="Map mode controls">
@@ -118,19 +122,11 @@
               </button>
               <button
                 class="control-button"
-                data-skin-mode="matte"
+                data-skin-mode="colormap"
                 type="button"
                 aria-pressed="false"
               >
-                Matte
-              </button>
-              <button
-                class="control-button"
-                data-skin-mode="wireframe"
-                type="button"
-                aria-pressed="false"
-              >
-                Wireframe
+                Color Map
               </button>
             </div>
           </div>
@@ -185,6 +181,15 @@
             </div>
           </div>
         </section>
+
+        <button
+          id="confirm-controls"
+          class="confirm-controls"
+          type="button"
+          onclick="window.__earthConfirmSelection && window.__earthConfirmSelection()"
+        >
+          Confirm Choices
+        </button>
       </section>
     </main>
 

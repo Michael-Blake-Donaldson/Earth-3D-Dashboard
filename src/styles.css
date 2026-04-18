@@ -9,6 +9,53 @@
   z-index: 10;
 }
 
+.home-space {
+  --bg-light: #1a2745;
+  --bg-medium: #131f3b;
+  --bg-dark: #090f22;
+  --color-text: #eef4ff;
+  --color-text-light: #a8bbdc;
+  --color-accent: #8bd8ff;
+  --color-border: rgba(141, 216, 255, 0.35);
+  background:
+    radial-gradient(circle at 25% 15%, rgba(69, 121, 255, 0.22) 0%, rgba(69, 121, 255, 0) 38%),
+    radial-gradient(circle at 78% 75%, rgba(100, 50, 212, 0.18) 0%, rgba(100, 50, 212, 0) 46%),
+    linear-gradient(145deg, #0c1329 0%, #0a1020 48%, #070c18 100%);
+}
+
+.home-space::before {
+  background-image:
+    radial-gradient(circle at 18% 26%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle at 38% 62%, rgba(145, 216, 255, 0.45) 0.8px, transparent 0.8px),
+    radial-gradient(circle at 83% 21%, rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+    radial-gradient(circle at 11% 88%, rgba(173, 197, 255, 0.32) 0.9px, transparent 0.9px),
+    radial-gradient(circle at 93% 78%, rgba(146, 220, 255, 0.4) 0.8px, transparent 0.8px);
+  background-size:
+    180px 180px,
+    280px 280px,
+    230px 230px,
+    320px 320px,
+    260px 260px;
+  opacity: 0.65;
+}
+
+.home-space .top-nav a {
+  background: rgba(14, 22, 42, 0.66);
+  border-color: rgba(141, 216, 255, 0.42);
+  color: #d9e7ff;
+}
+
+.home-space .page-loader {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(119, 188, 255, 0.2) 0%, rgba(119, 188, 255, 0) 58%),
+    radial-gradient(circle at 72% 75%, rgba(162, 114, 255, 0.16) 0%, rgba(162, 114, 255, 0) 50%),
+    linear-gradient(145deg, rgba(8, 15, 31, 0.84) 0%, rgba(9, 16, 30, 0.86) 100%);
+}
+
+.home-space .loader-text {
+  color: #d8e8ff;
+}
+
 #renderCanvas {
   position: absolute;
   inset: 0;
@@ -24,6 +71,15 @@
   text-align: center;
   pointer-events: none;
   animation: fadeIn 800ms ease;
+  transform-origin: center center;
+  transition:
+    transform 1100ms cubic-bezier(0.2, 0.85, 0.22, 1),
+    opacity 920ms ease;
+}
+
+.hero-overlay.drift-away {
+  transform: translate(-34vw, -30vh) scale(0.42) rotate(-6deg);
+  opacity: 0.22;
 }
 
 .hero-content {
@@ -64,12 +120,13 @@
   font-size: clamp(4rem, 12vw, 10rem);
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: var(--color-accent);
+  color: #cde9ff;
   line-height: 1;
   text-transform: uppercase;
   text-shadow:
-    2px 2px 0 rgba(0, 0, 0, 0.1),
-    -2px 2px 0 rgba(0, 0, 0, 0.05);
+    0 0 22px rgba(77, 149, 255, 0.35),
+    0 0 58px rgba(58, 111, 255, 0.24),
+    0 2px 14px rgba(0, 0, 0, 0.6);
   animation: slideUp 600ms ease 200ms both;
 }
 
@@ -134,11 +191,13 @@
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+  background: rgba(3, 7, 18, 0.62);
+  backdrop-filter: blur(8px);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
   opacity: 1;
   transition:
     opacity 300ms ease,
@@ -152,37 +211,48 @@
   pointer-events: none;
 }
 
-.close-controls {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--color-text);
-  z-index: 210;
-  padding: 0;
-}
-
-.close-controls:hover {
-  background: rgba(0, 0, 0, 0.1);
-}
-
 .controls-dock {
   position: relative;
-  background: rgba(255, 255, 255, 0.95);
+  background:
+    linear-gradient(160deg, rgba(18, 30, 54, 0.95) 0%, rgba(11, 19, 38, 0.95) 100%);
   border: 1px solid var(--color-border);
-  border-radius: 2px;
+  border-radius: 12px;
   padding: 32px;
   display: grid;
   gap: 24px;
   max-width: 480px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 24px 55px rgba(0, 0, 0, 0.42),
+    inset 0 0 0 1px rgba(141, 216, 255, 0.18);
+}
+
+.confirm-controls {
+  position: relative;
+  z-index: 225;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 260px;
+  padding: 12px 26px;
+  border: 1px solid rgba(141, 216, 255, 0.46);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(26, 57, 109, 0.9) 0%, rgba(19, 36, 73, 0.95) 100%);
+  color: #ecf6ff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow:
+    0 12px 28px rgba(10, 26, 56, 0.5),
+    inset 0 0 0 1px rgba(191, 233, 255, 0.16);
+}
+
+.confirm-controls:hover {
+  background: linear-gradient(135deg, rgba(33, 70, 131, 0.95) 0%, rgba(23, 45, 88, 0.98) 100%);
+  transform: translateY(-1px);
 }
 
 .control-group {
@@ -207,7 +277,7 @@
 
 .control-button {
   padding: 10px 12px;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(8, 17, 35, 0.86);
   border: 1px solid var(--color-border);
   color: var(--color-text);
   font-size: 0.75rem;
@@ -220,13 +290,13 @@
 }
 
 .control-button:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(22, 42, 80, 0.88);
 }
 
 .control-button.active {
-  background: var(--color-text);
-  color: white;
-  border-color: var(--color-text);
+  background: linear-gradient(140deg, rgba(141, 216, 255, 0.24) 0%, rgba(74, 143, 255, 0.28) 100%);
+  color: #f2f8ff;
+  border-color: rgba(161, 226, 255, 0.9);
 }
 
 .control-button:disabled {
@@ -234,7 +304,8 @@
   cursor: not-allowed;
 }
 
-.scene-status {
+.scene-status,
+#scene-status {
   position: absolute;
   top: 14px;
   right: 14px;
@@ -242,9 +313,9 @@
   margin: 0;
   padding: 8px 12px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-light);
+  background: rgba(10, 20, 41, 0.76);
+  border: 1px solid rgba(141, 216, 255, 0.38);
+  color: #d4e6ff;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -252,6 +323,10 @@
 }
 
 @media (max-width: 768px) {
+  .hero-overlay.drift-away {
+    transform: translate(-25vw, -36vh) scale(0.46) rotate(-4deg);
+  }
+
   .hero-headline {
     font-size: clamp(2.5rem, 8vw, 5rem);
   }
@@ -266,12 +341,22 @@
     padding: 24px;
   }
 
+  .confirm-controls {
+    min-width: 220px;
+    width: 80vw;
+  }
+
   .control-row {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
+  .hero-overlay.drift-away {
+    transform: translate(-14vw, -34vh) scale(0.5) rotate(-3deg);
+    opacity: 0.18;
+  }
+
   .hero-overlay {
     padding: 20px;
   }

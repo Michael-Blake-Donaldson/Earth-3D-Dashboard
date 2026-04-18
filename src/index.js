@@ -4,7 +4,7 @@ let pageLoader;
 let heroOverlay;
 let controlsOverlay;
 let startButton;
-let closeControls;
+let confirmControls;
 
 let mapButtons = [];
 let skinButtons = [];
@@ -19,7 +19,7 @@ const initDomRefs = () => {
   heroOverlay = document.querySelector(".hero-overlay");
   controlsOverlay = document.getElementById("controls-overlay");
   startButton = document.getElementById("start-button");
-  closeControls = document.getElementById("close-controls");
+  confirmControls = document.getElementById("confirm-controls");
   mapButtons = [...document.querySelectorAll("[data-map-mode]")];
   skinButtons = [...document.querySelectorAll("[data-skin-mode]")];
   meshButtons = [...document.querySelectorAll("[data-mesh-mode]")];
@@ -36,6 +36,16 @@ let nightMesh;
 let atmosphereShell;
 let cloudShell;
 let pipeline;
+let currentMeshMode = "sphere";
+let pendingSelection = null;
+let isApplyingSelection = false;
+let hasEnteredViewingMode = false;
+
+const meshSetCache = {
+  sphere: null,
+  icosphere: null,
+  poly: null,
+};
 
 let currentMapMode = "day";
 let currentSkinMode = "realistic";
@@ -92,19 +102,53 @@ const hidePageLoader = () => {
 const showControlsOverlay = () => {
   if (controlsOverlay) {
     controlsOverlay.classList.remove("hidden");
+    controlsOverlay.setAttribute("aria-hidden", "false");
   }
-  if (heroOverlay) {
-    heroOverlay.style.display = "none";
-  }
+
+  pendingSelection = {
+    mapMode: currentMapMode,
+    skinMode: currentSkinMode,
+    meshMode: currentMeshMode,
+    effects: {
+      atmosphere: effectsState.atmosphere,
+      glow: effectsState.glow,
+      spin: effectsState.spin,
+    },
+  };
+
+  setButtonGroupState(mapButtons, pendingSelection.mapMode, "data-map-mode");
+  setButtonGroupState(skinButtons, pendingSelection.skinMode, "data-skin-mode");
+  setButtonGroupState(meshButtons, pendingSelection.meshMode, "data-mesh-mode");
+  setEffectButtonState("atmosphere", pendingSelection.effects.atmosphere);
+  setEffectButtonState("glow", pendingSelection.effects.glow);
+  setEffectButtonState("spin", pendingSelection.effects.spin);
 };
 
 const hideControlsOverlay = () => {
   if (controlsOverlay) {
     controlsOverlay.classList.add("hidden");
+    controlsOverlay.setAttribute("aria-hidden", "true");
   }
+
   if (heroOverlay) {
-    heroOverlay.style.display = "block";
+    heroOverlay.classList.add("drift-away");
   }
+
+  hasEnteredViewingMode = true;
+};
+
+const commitControlsSelectionAndExit = async (event) => {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  if (isApplyingSelection) {
+    return;
+  }
+
+  hideControlsOverlay();
+  await applyPendingSelection();
 };
 
 const setButtonGroupState = (buttons, activeValue, attrName) => {
@@ -123,6 +167,271 @@ const setEffectButtonState = (effectName, active) => {
 
   button.classList.toggle("active", active);
   button.setAttribute("aria-pressed", String(active));
+};
+
+const setCurrentGlobeVisibility = (isVisible) => {
+  if (!earthMesh || !populationMesh || !nightMesh) {
+    return;
+  }
+
+  if (!isVisible) {
+    earthMesh.isVisible = false;
+    populationMesh.isVisible = false;
+    nightMesh.isVisible = false;
+
+    if (atmosphereShell) {
+      atmosphereShell.isVisible = false;
+    }
+
+    if (cloudShell) {
+      cloudShell.isVisible = false;
+    }
+
+    return;
+  }
+
+  applyMapMode(currentMapMode);
+  setAtmosphereEffect(effectsState.atmosphere);
+};
+
+const startParticleAssemblyIntro = (sceneRef, onProgress = () => {}) => {
+  const PARTICLE_COUNT = 2200;
+  const ROAM_DURATION = 2.7;
+  const ASSEMBLY_DURATION = 3.8;
+  const TOTAL_DURATION = ROAM_DURATION + ASSEMBLY_DURATION;
+  const EARTH_RADIUS = 1;
+  const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+
+  return new Promise((resolve) => {
+    const particles = new BABYLON.PointsCloudSystem("earthAssemblyIntro", { pointSize: 2.2 }, sceneRef);
+    const targetPositions = [];
+    const driftVectors = [];
+    const phaseOffsets = [];
+    const orbitOffsets = [];
+
+    for (let index = 0; index < PARTICLE_COUNT; index += 1) {
+      const y = 1 - ((index + 0.5) / PARTICLE_COUNT) * 2;
+      const radial = Math.sqrt(Math.max(0, 1 - y * y));
+      const theta = GOLDEN_ANGLE * index;
+      targetPositions.push(
+        new BABYLON.Vector3(Math.cos(theta) * radial * EARTH_RADIUS, y * EARTH_RADIUS, Math.sin(theta) * radial * EARTH_RADIUS)
+      );
+
+      driftVectors.push(
+        new BABYLON.Vector3((Math.random() - 0.5) * 0.02, (Math.random() - 0.5) * 0.02, (Math.random() - 0.5) * 0.02)
+      );
+      phaseOffsets.push(Math.random() * Math.PI * 2);
+      orbitOffsets.push(Math.random() * Math.PI * 2);
+    }
+
+    particles.addPoints(PARTICLE_COUNT, (particle, index) => {
+      const orbitRadius = 3.1 + Math.random() * 3.9;
+      const orbitAngle = orbitOffsets[index];
+      const verticalRange = (Math.random() - 0.5) * 4.8;
+
+      particle.position = new BABYLON.Vector3(
+        Math.cos(orbitAngle) * orbitRadius,
+        verticalRange,
+        Math.sin(orbitAngle) * orbitRadius
+      );
+
+      particle.color = new BABYLON.Color4(0.73, 0.84, 0.94, 0.9);
+    });
+
+    particles
+      .buildMeshAsync()
+      .then(() => {
+        const startTime = performance.now();
+        const animationState = { elapsed: 0 };
+
+        particles.updateParticle = (particle) => {
+          const index = particle.idx;
+          const elapsed = animationState.elapsed;
+          const roamRatio = BABYLON.Scalar.Clamp(elapsed / ROAM_DURATION, 0, 1);
+          const assembleRatio = BABYLON.Scalar.Clamp(
+            (elapsed - ROAM_DURATION * 0.42) / ASSEMBLY_DURATION,
+            0,
+            1
+          );
+          const joinStrength = BABYLON.Scalar.SmoothStep(0, 1, assembleRatio);
+
+          const drift = driftVectors[index];
+          const driftScale = 1 - joinStrength;
+          particle.position.x +=
+            (drift.x + Math.sin(elapsed * 1.5 + phaseOffsets[index]) * 0.0038) * driftScale;
+          particle.position.y +=
+            (drift.y + Math.sin(elapsed * 1.2 + phaseOffsets[index] * 0.7) * 0.0032) * driftScale;
+          particle.position.z +=
+            (drift.z + Math.cos(elapsed * 1.35 + phaseOffsets[index]) * 0.0038) * driftScale;
+
+          const spiral = (1 - roamRatio) * 0.02;
+          const spiralAngle = elapsed * 0.5 + orbitOffsets[index];
+          particle.position.x += Math.cos(spiralAngle) * spiral;
+          particle.position.z += Math.sin(spiralAngle) * spiral;
+
+          const target = targetPositions[index];
+          const pullForce = 0.012 + joinStrength * 0.16;
+          particle.position.x += (target.x - particle.position.x) * pullForce;
+          particle.position.y += (target.y - particle.position.y) * pullForce;
+          particle.position.z += (target.z - particle.position.z) * pullForce;
+
+          const shimmer = (1 - joinStrength) * 0.13;
+          particle.color.r = 0.54 + joinStrength * 0.24 + Math.sin(elapsed * 3 + phaseOffsets[index]) * shimmer * 0.07;
+          particle.color.g = 0.67 + joinStrength * 0.2 + Math.cos(elapsed * 2.4 + phaseOffsets[index]) * shimmer * 0.07;
+          particle.color.b = 0.8 + joinStrength * 0.14;
+          particle.color.a = 0.35 + joinStrength * 0.65;
+          return particle;
+        };
+
+        const frameObserver = sceneRef.onBeforeRenderObservable.add(() => {
+          animationState.elapsed = (performance.now() - startTime) / 1000;
+          particles.setParticles();
+
+          const totalProgress = BABYLON.Scalar.Clamp(animationState.elapsed / TOTAL_DURATION, 0, 1);
+          onProgress(totalProgress);
+
+          if (animationState.elapsed >= TOTAL_DURATION) {
+            sceneRef.onBeforeRenderObservable.remove(frameObserver);
+            particles.dispose();
+            resolve();
+          }
+        });
+      })
+      .catch((error) => {
+        console.warn("Particle intro failed to initialize, continuing startup.", error);
+        particles.dispose();
+        resolve();
+      });
+  });
+};
+
+const getMeshSurfacePoint = (meshMode, index, totalPoints, radius = 1) => {
+  const u = (index + 0.5) / totalPoints;
+  const v = (index * 0.61803398875) % 1;
+  const theta = 2 * Math.PI * v;
+  const phi = Math.acos(1 - 2 * u);
+
+  let x = Math.sin(phi) * Math.cos(theta);
+  let y = Math.cos(phi);
+  let z = Math.sin(phi) * Math.sin(theta);
+
+  if (meshMode === "icosphere") {
+    const quantize = 0.2;
+    x = Math.round(x / quantize) * quantize;
+    y = Math.round(y / quantize) * quantize;
+    z = Math.round(z / quantize) * quantize;
+  }
+
+  if (meshMode === "poly") {
+    const quantize = 0.36;
+    x = Math.round(x / quantize) * quantize;
+    y = Math.round(y / quantize) * quantize;
+    z = Math.round(z / quantize) * quantize;
+  }
+
+  const normalized = new BABYLON.Vector3(x, y, z).normalize();
+  return normalized.scale(radius);
+};
+
+const runMeshTransitionParticles = (sceneRef, fromMeshMode, toMeshMode) => {
+  if (!sceneRef || fromMeshMode === toMeshMode) {
+    return Promise.resolve();
+  }
+
+  const particleCount = 1700;
+  const durationMs = 1200;
+  const sourcePoints = [];
+  const targetPoints = [];
+
+  for (let index = 0; index < particleCount; index += 1) {
+    sourcePoints.push(getMeshSurfacePoint(fromMeshMode, index, particleCount, 1));
+    targetPoints.push(getMeshSurfacePoint(toMeshMode, index, particleCount, 1));
+  }
+
+  const particles = new BABYLON.PointsCloudSystem("meshSwitchParticles", { pointSize: 2.1 }, sceneRef);
+
+  particles.addPoints(particleCount, (particle, index) => {
+    particle.position = sourcePoints[index].clone();
+    particle.color = new BABYLON.Color4(0.58, 0.73, 0.86, 0.9);
+  });
+
+  return particles
+    .buildMeshAsync()
+    .then(() =>
+      new Promise((resolve) => {
+        const startTs = performance.now();
+        let blend = 0;
+
+        particles.updateParticle = (particle) => {
+          const idx = particle.idx;
+          const eased = BABYLON.Scalar.SmoothStep(0, 1, blend);
+          const from = sourcePoints[idx];
+          const to = targetPoints[idx];
+
+          particle.position.x = from.x + (to.x - from.x) * eased;
+          particle.position.y = from.y + (to.y - from.y) * eased;
+          particle.position.z = from.z + (to.z - from.z) * eased;
+
+          particle.color.r = 0.56 + eased * 0.2;
+          particle.color.g = 0.72 + eased * 0.14;
+          particle.color.b = 0.85 + eased * 0.1;
+          particle.color.a = 0.38 + eased * 0.62;
+          return particle;
+        };
+
+        const observer = sceneRef.onBeforeRenderObservable.add(() => {
+          blend = BABYLON.Scalar.Clamp((performance.now() - startTs) / durationMs, 0, 1);
+          particles.setParticles();
+
+          if (blend >= 1) {
+            sceneRef.onBeforeRenderObservable.remove(observer);
+            particles.dispose();
+            resolve();
+          }
+        });
+      })
+    )
+    .catch((error) => {
+      console.warn("Mesh transition particle effect failed, applying mesh directly.", error);
+      particles.dispose();
+    });
+};
+
+const applyPendingSelection = async () => {
+  if (!pendingSelection || isApplyingSelection || !scene) {
+    return;
+  }
+
+  isApplyingSelection = true;
+  setControlsDisabled(true);
+
+  const selectedState = pendingSelection;
+  pendingSelection = null;
+
+  const meshChanged = selectedState.meshMode !== currentMeshMode;
+  if (meshChanged) {
+    setStatus("Reshaping globe from particles...");
+    setCurrentGlobeVisibility(false);
+    await runMeshTransitionParticles(scene, currentMeshMode, selectedState.meshMode);
+    buildMeshSet(selectedState.meshMode);
+  }
+
+  applyMapMode(selectedState.mapMode);
+  applySkinMode(selectedState.skinMode);
+  setAtmosphereEffect(selectedState.effects.atmosphere);
+  setGlowEffect(selectedState.effects.glow);
+  setSpinEffect(selectedState.effects.spin);
+  setCurrentGlobeVisibility(true);
+
+  if (hasEnteredViewingMode) {
+    setStatus("Viewing mode active.");
+    window.setTimeout(() => {
+      hideStatus();
+    }, 900);
+  }
+
+  setControlsDisabled(false);
+  isApplyingSelection = false;
 };
 
 const createTexture = (path, sceneRef, onLoaded, onError) => {
@@ -152,12 +461,78 @@ const createPlanetMesh = (name, meshMode, sceneRef, size = 1) => {
   return BABYLON.MeshBuilder.CreateSphere(name, { diameter: size * 2, segments: 64 }, sceneRef);
 };
 
+const disposeMeshSet = (meshSet) => {
+  if (!meshSet) {
+    return;
+  }
+
+  [meshSet.earth, meshSet.population, meshSet.night, meshSet.atmosphere, meshSet.cloud].forEach(
+    (mesh) => {
+      if (mesh && !mesh.isDisposed()) {
+        mesh.dispose(false, true);
+      }
+    }
+  );
+};
+
 const disposeCurrentMeshes = () => {
   [earthMesh, populationMesh, nightMesh, atmosphereShell, cloudShell].forEach((mesh) => {
     if (mesh && !mesh.isDisposed()) {
       mesh.dispose(false, true);
     }
   });
+};
+
+const setMeshSetVisibility = (meshSet, isVisible) => {
+  if (!meshSet) {
+    return;
+  }
+
+  meshSet.earth.isVisible = isVisible;
+  meshSet.population.isVisible = false;
+  meshSet.night.isVisible = false;
+  meshSet.atmosphere.isVisible = isVisible && effectsState.atmosphere;
+  meshSet.cloud.isVisible = isVisible && effectsState.atmosphere;
+};
+
+const createMeshSet = (meshMode) => {
+  const modeSuffix = `${meshMode}Mesh`;
+
+  const meshSet = {
+    earth: createPlanetMesh(`earth-${modeSuffix}`, meshMode, scene, 1),
+    population: createPlanetMesh(`population-${modeSuffix}`, meshMode, scene, 1),
+    night: createPlanetMesh(`night-${modeSuffix}`, meshMode, scene, 1),
+    atmosphere: createPlanetMesh(`atmosphere-${modeSuffix}`, meshMode, scene, 1.045),
+    cloud: createPlanetMesh(`cloud-${modeSuffix}`, meshMode, scene, 1.028),
+  };
+
+  meshSet.earth.material = materials.earth;
+  meshSet.population.material = materials.population;
+  meshSet.night.material = materials.night;
+  meshSet.atmosphere.material = materials.atmosphere;
+  meshSet.cloud.material = materials.cloud;
+
+  setMeshSetVisibility(meshSet, false);
+  return meshSet;
+};
+
+const setActiveMeshSet = (meshMode) => {
+  const nextMeshSet = meshSetCache[meshMode] || createMeshSet(meshMode);
+  meshSetCache[meshMode] = nextMeshSet;
+
+  const previousMeshSet = meshSetCache[currentMeshMode];
+  if (previousMeshSet && previousMeshSet !== nextMeshSet) {
+    setMeshSetVisibility(previousMeshSet, false);
+  }
+
+  earthMesh = nextMeshSet.earth;
+  populationMesh = nextMeshSet.population;
+  nightMesh = nextMeshSet.night;
+  atmosphereShell = nextMeshSet.atmosphere;
+  cloudShell = nextMeshSet.cloud;
+
+  setMeshSetVisibility(nextMeshSet, true);
+  currentMeshMode = meshMode;
 };
 
 const applyMapMode = (modeName) => {
@@ -174,6 +549,10 @@ const applyMapMode = (modeName) => {
 };
 
 const applySkinMode = (skinMode) => {
+  if (skinMode === currentSkinMode) {
+    return;
+  }
+
   currentSkinMode = skinMode;
 
   const mapMaterials = [materials.earth, materials.population, materials.night];
@@ -188,30 +567,19 @@ const applySkinMode = (skinMode) => {
     material.emissiveColor = BABYLON.Color3.Black();
   });
 
-  if (skinMode === "matte") {
+  if (skinMode === "colormap") {
     mapMaterials.forEach((material) => {
       if (!material) {
         return;
       }
 
-      material.specularColor = new BABYLON.Color3(0.04, 0.06, 0.07);
-      material.emissiveColor = new BABYLON.Color3(0.02, 0.05, 0.08);
-    });
-  }
-
-  if (skinMode === "wireframe") {
-    mapMaterials.forEach((material) => {
-      if (!material) {
-        return;
-      }
-
-      material.wireframe = true;
-      material.emissiveColor = new BABYLON.Color3(0.32, 0.7, 0.96);
+      material.specularColor = new BABYLON.Color3(0.02, 0.02, 0.02);
+      material.emissiveColor = new BABYLON.Color3(0.1, 0.14, 0.18);
     });
   }
 
   if (materials.earth?.bumpTexture) {
-    materials.earth.bumpTexture.level = skinMode === "realistic" ? 1.15 : 0.55;
+    materials.earth.bumpTexture.level = skinMode === "realistic" ? 1.15 : 0.35;
   }
 
   setButtonGroupState(skinButtons, skinMode, "data-skin-mode");
@@ -250,22 +618,15 @@ const setSpinEffect = (isActive) => {
 };
 
 const buildMeshSet = (meshMode) => {
-  disposeCurrentMeshes();
+  if (!scene || !meshSetCache[meshMode] && !materials.earth) {
+    return;
+  }
 
-  earthMesh = createPlanetMesh("earthMesh", meshMode, scene, 1);
-  earthMesh.material = materials.earth;
+  if (meshMode === currentMeshMode && earthMesh && populationMesh && nightMesh) {
+    return;
+  }
 
-  populationMesh = createPlanetMesh("populationMesh", meshMode, scene, 1);
-  populationMesh.material = materials.population;
-
-  nightMesh = createPlanetMesh("nightMesh", meshMode, scene, 1);
-  nightMesh.material = materials.night;
-
-  atmosphereShell = createPlanetMesh("atmosphereShell", meshMode, scene, 1.045);
-  atmosphereShell.material = materials.atmosphere;
-
-  cloudShell = createPlanetMesh("cloudShell", meshMode, scene, 1.028);
-  cloudShell.material = materials.cloud;
+  setActiveMeshSet(meshMode);
 
   setButtonGroupState(meshButtons, meshMode, "data-mesh-mode");
   applyMapMode(currentMapMode);
@@ -312,6 +673,24 @@ const createScene = () => {
   let loadedTextures = 0;
   let failedTextures = 0;
   const totalTextures = texturePaths.length + 1;
+  let texturesReady = false;
+  let introReady = false;
+  let startupFinalized = false;
+
+  const finalizeStartup = () => {
+    if (startupFinalized || !texturesReady || !introReady) {
+      return;
+    }
+
+    startupFinalized = true;
+    setCurrentGlobeVisibility(true);
+    setStatus("Scene ready.");
+    setControlsDisabled(false);
+    window.setTimeout(() => {
+      hideStatus();
+      hidePageLoader();
+    }, 420);
+  };
 
   const updateLoading = () => {
     const complete = loadedTextures + failedTextures;
@@ -321,17 +700,18 @@ const createScene = () => {
       return;
     }
 
-    if (failedTextures > 0) {
-      setStatus(`Loaded with ${failedTextures} texture warning${failedTextures > 1 ? "s" : ""}.`);
-    } else {
-      setStatus("Scene ready.");
+    texturesReady = true;
+
+    if (!introReady) {
+      setStatus("Particles are assembling Earth...");
+      return;
     }
 
-    setControlsDisabled(false);
-    window.setTimeout(() => {
-      hideStatus();
-      hidePageLoader();
-    }, 380);
+    if (failedTextures > 0) {
+      setStatus(`Loaded with ${failedTextures} texture warning${failedTextures > 1 ? "s" : ""}.`);
+    }
+
+    finalizeStartup();
   };
 
   const onLoaded = () => {
@@ -367,38 +747,69 @@ const createScene = () => {
   materials.cloud.specularColor = BABYLON.Color3.Black();
   materials.cloud.emissiveColor = new BABYLON.Color3(0.03, 0.05, 0.08);
 
-  buildMeshSet("sphere");
-  applyMapMode("day");
-  applySkinMode("realistic");
+  currentMeshMode = "sphere";
+  currentMapMode = "day";
+  currentSkinMode = "realistic";
+  effectsState.atmosphere = true;
+  effectsState.glow = false;
+  effectsState.spin = false;
+
+  setActiveMeshSet("sphere");
+  setButtonGroupState(meshButtons, "sphere", "data-mesh-mode");
+  applyMapMode(currentMapMode);
+  applySkinMode("colormap");
+  applySkinMode(currentSkinMode);
+  setAtmosphereEffect(false);
   setAtmosphereEffect(true);
   setGlowEffect(false);
   setSpinEffect(false);
+  setCurrentGlobeVisibility(false);
+
+  startParticleAssemblyIntro(sceneRef, (progress) => {
+    if (texturesReady) {
+      setStatus(`Particles are assembling Earth (${Math.round(progress * 100)}%)...`);
+    }
+  }).then(() => {
+    introReady = true;
+    finalizeStartup();
+  });
 
   loadedTextures += 1;
   updateLoading();
 
-  const sceneOptimizer = new BABYLON.SceneOptimizer(
-    sceneRef,
-    {
-      targetFrameRate: 55,
-      trackerDuration: 2000,
-    },
-    [
+  try {
+    const optimizerOptions = new BABYLON.SceneOptimizerOptions(55, 2000);
+    optimizerOptions.optimizations.push(
       new BABYLON.HardwareScalingOptimization(0, 1.4),
       new BABYLON.TextureOptimization(1, 256),
-      new BABYLON.ShadowsOptimization(1),
-    ]
-  );
-  sceneOptimizer.start();
+      new BABYLON.ShadowsOptimization(1)
+    );
+
+    const sceneOptimizer = new BABYLON.SceneOptimizer(sceneRef, optimizerOptions);
+    sceneOptimizer.start();
+  } catch (optimizerError) {
+    // Optimizer failure should not block globe startup or UI interactions.
+    console.warn("Scene optimizer setup failed, continuing without optimizations.", optimizerError);
+  }
 
   return sceneRef;
 };
 
 const bindControls = () => {
+  window.__earthConfirmSelection = () => {
+    void commitControlsSelectionAndExit();
+  };
+
   mapButtons.forEach((button) => {
     safeAddEventListener(button, "click", () => {
       const modeName = button.dataset.mapMode;
       if (modeName) {
+        if (pendingSelection) {
+          pendingSelection.mapMode = modeName;
+          setButtonGroupState(mapButtons, modeName, "data-map-mode");
+          return;
+        }
+
         applyMapMode(modeName);
       }
     });
@@ -408,6 +819,12 @@ const bindControls = () => {
     safeAddEventListener(button, "click", () => {
       const skinName = button.dataset.skinMode;
       if (skinName) {
+        if (pendingSelection) {
+          pendingSelection.skinMode = skinName;
+          setButtonGroupState(skinButtons, skinName, "data-skin-mode");
+          return;
+        }
+
         applySkinMode(skinName);
       }
     });
@@ -417,6 +834,12 @@ const bindControls = () => {
     safeAddEventListener(button, "click", () => {
       const meshMode = button.dataset.meshMode;
       if (meshMode) {
+        if (pendingSelection) {
+          pendingSelection.meshMode = meshMode;
+          setButtonGroupState(meshButtons, meshMode, "data-mesh-mode");
+          return;
+        }
+
         buildMeshSet(meshMode);
       }
     });
@@ -426,6 +849,12 @@ const bindControls = () => {
     safeAddEventListener(button, "click", () => {
       const effectName = button.dataset.effect;
       if (!effectName) {
+        return;
+      }
+
+      if (pendingSelection) {
+        pendingSelection.effects[effectName] = !pendingSelection.effects[effectName];
+        setEffectButtonState(effectName, pendingSelection.effects[effectName]);
         return;
       }
 
@@ -447,13 +876,18 @@ const bindControls = () => {
     showControlsOverlay();
   });
 
-  safeAddEventListener(closeControls, "click", () => {
-    hideControlsOverlay();
-  });
+  safeAddEventListener(confirmControls, commitControlsSelectionAndExit);
+  safeAddEventListener(confirmControls, "pointerup", commitControlsSelectionAndExit);
 
-  safeAddEventListener(controlsOverlay, "click", (e) => {
+  safeAddEventListener(controlsOverlay, async (e) => {
+    const confirmTrigger = e.target?.closest?.("#confirm-controls");
+    if (confirmTrigger) {
+      await commitControlsSelectionAndExit(e);
+      return;
+    }
+
     if (e.target === controlsOverlay) {
-      hideControlsOverlay();
+      await commitControlsSelectionAndExit();
     }
   });
 };
@@ -548,6 +982,12 @@ const bootstrap = () => {
     console.error("Globe startup failed.", error);
     setStatus("Unable to initialize the 3D globe.");
     hidePageLoader();
+
+    Object.keys(meshSetCache).forEach((key) => {
+      disposeMeshSet(meshSetCache[key]);
+      meshSetCache[key] = null;
+    });
+    disposeCurrentMeshes();
   }
 };
 
