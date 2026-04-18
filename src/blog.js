@@ -5,6 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const articlesContainer = document.getElementById("articles");
     const searchInput = document.getElementById("search-input");
     const resultsStatus = document.getElementById("results-status");
+    const categoryFilters = document.getElementById("category-filters");
+    const allCategories = [...new Set(articles.map((article) => article.category))].sort();
+    let activeCategory = "";
 
     if (!articlesContainer) {
         console.error('Element with id "articles" not found.');
@@ -54,11 +57,58 @@ document.addEventListener("DOMContentLoaded", () => {
         resultsStatus.textContent = `Showing ${count} article${count === 1 ? "" : "s"} for "${filter}".`;
     };
 
+    const setActiveChip = (category) => {
+        if (!categoryFilters) {
+            return;
+        }
+
+        const chips = categoryFilters.querySelectorAll(".category-chip");
+        chips.forEach((chip) => {
+            const isMatch = chip.dataset.category === category;
+            chip.classList.toggle("active", isMatch);
+            chip.setAttribute("aria-pressed", String(isMatch));
+        });
+    };
+
+    const renderCategoryFilters = () => {
+        if (!categoryFilters) {
+            return;
+        }
+
+        const allFilters = ["All", ...allCategories];
+        categoryFilters.innerHTML = allFilters
+            .map((category) => {
+                const dataCategory = category === "All" ? "" : category;
+                return `<button type="button" class="category-chip" data-category="${sanitizeText(dataCategory)}" aria-pressed="false">${sanitizeText(category)}</button>`;
+            })
+            .join("");
+
+        categoryFilters.addEventListener("click", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLButtonElement)) {
+                return;
+            }
+
+            activeCategory = target.dataset.category || "";
+            if (searchInput) {
+                searchInput.value = activeCategory;
+            }
+            renderArticles(activeCategory);
+        });
+
+        setActiveChip("");
+    };
+
     const renderArticles = (filter = "") => {
         const normalizedFilter = filter.trim().toLowerCase();
         const filteredArticles = articles.filter((article) =>
             article.category.toLowerCase().includes(normalizedFilter)
         );
+
+        activeCategory = allCategories.find(
+            (category) => category.toLowerCase() === normalizedFilter
+        ) || "";
+        setActiveChip(activeCategory);
 
         if (!filteredArticles.length) {
             renderEmptyState(filter.trim());
@@ -71,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     renderArticles();
+    renderCategoryFilters();
 
     if (searchInput) {
         searchInput.addEventListener("input", (event) => {

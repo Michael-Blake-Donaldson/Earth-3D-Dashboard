@@ -4,7 +4,9 @@ import { normalizeQueryValue, sanitizeText } from "./utils/sanitize.js";
 const articleContainer = document.getElementById("article-container");
 
 const formatArticleContent = (content) => {
-    const safeContent = sanitizeText(content);
+    const safeContent = sanitizeText(content)
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 
     // Render each text block as a paragraph while preserving line breaks between ideas.
     return safeContent

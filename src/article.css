@@ -35,6 +35,12 @@ main {
   margin: 0 0 14px;
 }
 
+.article p a {
+  color: #f2fbff;
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
+
 .article .article-meta {
   font-size: 0.95rem;
   color: var(--color-ice);
