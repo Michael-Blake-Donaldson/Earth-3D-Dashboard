@@ -3,25 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore Earth through an interactive 3D globe and science-driven articles on climate, geology, oceanography, and astronomy.">
+  <meta name="robots" content="index,follow">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Explore Earth 3D Dashboard">
+  <meta property="og:description" content="Interactive Earth visualization with scientific article insights.">
+  <meta property="og:image" content="assets/og-preview.png">
+  <meta property="og:url" content="https://michael-blake-donaldson.github.io/Earth-3D-Dashboard/src/index.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Explore Earth 3D Dashboard">
+  <meta name="twitter:description" content="Interactive Earth visualization with scientific article insights.">
+  <meta name="twitter:image" content="assets/og-preview.png">
   <title>3D Geographic Data Dashboard</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://cdn.babylonjs.com">
 </head>
-<header>
-  <h1 class="title">EXPLORE EARTH</h1>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="blog.html">Blog</a>
-</nav>
-</header>
 <body>
+  <header>
+    <h1 class="title">EXPLORE EARTH</h1>
+    <nav aria-label="Primary">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="blog.html">Blog</a>
+    </nav>
+  </header>
 
-    <div id="buttons-container">
-      <button id="togglePopulationMap">Population Density</button>
-      <button id="toggleNightEarthMap">Day vs Night</button>
-  </div>
+  <main>
+    <h2 class="sr-only">Interactive Earth Visualization</h2>
+    <div id="buttons-container" aria-label="Map controls">
+      <button id="togglePopulationMap" type="button" aria-pressed="false">Population Density</button>
+      <button id="toggleNightEarthMap" type="button" aria-pressed="false">Day vs Night</button>
+    </div>
 
-  <canvas id="renderCanvas"></canvas>
-  <script src="https://cdn.babylonjs.com/babylon.js"></script>
-<script src="index.js" type="module"></script>
+    <canvas id="renderCanvas" role="img" aria-label="3D Earth model showing selectable map overlays">
+      Your browser does not support canvas. Open the Blog page for accessible article content.
+    </canvas>
+  </main>
+
+  <script src="https://cdn.babylonjs.com/babylon.js" defer></script>
+  <script src="index.js" type="module"></script>
 </body>
 </html>

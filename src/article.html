@@ -3,18 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Read full Earth science article details with references and curated visuals.">
+    <meta name="robots" content="index,follow">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Explore Earth Article Details">
+    <meta property="og:description" content="Detailed Earth science article content and references.">
+    <meta property="og:image" content="assets/og-preview.png">
+    <meta property="og:url" content="https://michael-blake-donaldson.github.io/Earth-3D-Dashboard/src/article.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Explore Earth Article Details">
+    <meta name="twitter:description" content="Detailed Earth science article content and references.">
+    <meta name="twitter:image" content="assets/og-preview.png">
     <title>Article Details</title>
     <link rel="stylesheet" href="article.css">
 </head>
 <body>
     <header>
         <h1 class="title">Article Details</h1>
-        <nav>
+        <nav aria-label="Primary">
             <a href="index.html">Home</a>
             <a href="blog.html">Blog</a>
         </nav>
     </header>
-    <main id="article-container">
+    <main id="article-container" aria-live="polite">
         <!-- Article content will be dynamically rendered here -->
     </main>
     <a href="blog.html" class="back-button">Back to Blog</a>

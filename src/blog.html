@@ -3,22 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Read Earth science articles across climate, geology, oceanography, astronomy, and environmental science.">
+    <meta name="robots" content="index,follow">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Explore Earth Blog">
+    <meta property="og:description" content="Earth science stories and references from climate to oceanography.">
+    <meta property="og:image" content="assets/og-preview.png">
+    <meta property="og:url" content="https://michael-blake-donaldson.github.io/Earth-3D-Dashboard/src/blog.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Explore Earth Blog">
+    <meta name="twitter:description" content="Earth science stories and references from climate to oceanography.">
+    <meta name="twitter:image" content="assets/og-preview.png">
     <title>Earth Blog</title>
     <link rel="stylesheet" href="blog.css">
 </head>
 <body>
     <header>
         <h1 class="title">Explore Earth</h1>
-        <nav>
+        <nav aria-label="Primary">
             <a href="index.html">Home</a>
-            <a href="blog.html">Blog</a>
+            <a href="blog.html" aria-current="page">Blog</a>
         </nav>
     </header>
     <main id="blog-container">
         <section class="search-bar">
-            <input type="text" id="search-input" placeholder="Search articles by category...">
+            <label for="search-input" class="sr-only">Search articles by category</label>
+            <input type="text" id="search-input" placeholder="Search articles by category..." autocomplete="off">
         </section>
-        <section id="articles">
+        <p id="results-status" aria-live="polite" class="results-status"></p>
+        <section id="articles" aria-label="Article results">
             <!-- Articles dynamically rendered by JavaScript -->
         </section>
     </main>
