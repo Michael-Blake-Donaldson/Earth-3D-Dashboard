@@ -12,6 +12,7 @@ let skinButtons = [];
 let meshButtons = [];
 let effectButtons = [];
 let controlButtons = [];
+let navActionLinks = [];
 
 const initDomRefs = () => {
   canvas = document.getElementById("renderCanvas");
@@ -27,6 +28,7 @@ const initDomRefs = () => {
   meshButtons = [...document.querySelectorAll("[data-mesh-mode]")];
   effectButtons = [...document.querySelectorAll("[data-effect]")];
   controlButtons = [...document.querySelectorAll(".control-button")];
+  navActionLinks = [...document.querySelectorAll("[data-nav-action]")];
 };
 
 let engine;
@@ -194,6 +196,44 @@ const beginMenuReengageSequence = () => {
   };
 
   menuReengageFrameId = window.requestAnimationFrame(tick);
+};
+
+const resetGlobeView = () => {
+  if (!camera) {
+    return;
+  }
+
+  const defaultAlpha = Math.PI / 2;
+  const defaultBeta = Math.PI / 2.2;
+  const defaultRadius = 5;
+
+  if (scene && BABYLON?.Animation?.CreateAndStartAnimation) {
+    BABYLON.Animation.CreateAndStartAnimation(
+      "cameraAlphaReset",
+      camera,
+      "alpha",
+      60,
+      26,
+      camera.alpha,
+      defaultAlpha,
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    );
+    BABYLON.Animation.CreateAndStartAnimation(
+      "cameraBetaReset",
+      camera,
+      "beta",
+      60,
+      26,
+      camera.beta,
+      defaultBeta,
+      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+    );
+  } else {
+    camera.alpha = defaultAlpha;
+    camera.beta = defaultBeta;
+  }
+
+  animateCameraRadius(defaultRadius, 26);
 };
 
 const showControlsOverlay = () => {
@@ -1020,6 +1060,22 @@ const bindControls = () => {
     }
 
     beginMenuReengageSequence();
+  });
+
+  navActionLinks.forEach((link) => {
+    safeAddEventListener(link, "click", (event) => {
+      event.preventDefault();
+
+      const action = link.dataset.navAction;
+      if (action === "open-controls") {
+        showControlsOverlay();
+        return;
+      }
+
+      if (action === "reset-view") {
+        resetGlobeView();
+      }
+    });
   });
 
   safeAddEventListener(confirmControls, commitControlsSelectionAndExit);
