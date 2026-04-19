@@ -18,6 +18,8 @@ let dataInsightUpdated;
 let dataInsightLink;
 let layerOpacityInput;
 let layerOpacityValue;
+let navBlogsLink;
+let navFeaturedLink;
 let onboardingOverlay;
 let onboardingTitle;
 let onboardingBody;
@@ -54,6 +56,8 @@ const initDomRefs = () => {
   dataInsightLink = document.getElementById("data-insight-link");
   layerOpacityInput = document.getElementById("layer-opacity");
   layerOpacityValue = document.getElementById("layer-opacity-value");
+  navBlogsLink = document.getElementById("nav-blogs-link");
+  navFeaturedLink = document.getElementById("nav-featured-link");
   onboardingOverlay = document.getElementById("onboarding-overlay");
   onboardingTitle = document.getElementById("onboarding-title");
   onboardingBody = document.getElementById("onboarding-body");
@@ -612,6 +616,38 @@ const setDataLayerButtonState = (layerId, active) => {
   button.setAttribute("aria-pressed", String(active));
 };
 
+const resolveAppUrl = (relativePath) => {
+  const rawPath = window.location.pathname || "/";
+  const segments = rawPath.split("/").filter(Boolean);
+
+  if (segments.length && /\.html?$/i.test(segments[segments.length - 1])) {
+    segments.pop();
+  }
+
+  while (
+    segments.length > 1 &&
+    segments[segments.length - 1] === "src" &&
+    segments[segments.length - 2] === "src"
+  ) {
+    segments.pop();
+  }
+
+  const basePath = `/${segments.join("/")}${segments.length ? "/" : ""}`;
+  return new URL(relativePath, `${window.location.origin}${basePath}`).toString();
+};
+
+const configureStaticNavLinks = () => {
+  if (navBlogsLink) {
+    navBlogsLink.href = resolveAppUrl("blog.html");
+  }
+
+  if (navFeaturedLink) {
+    navFeaturedLink.href = resolveAppUrl(
+      `article.html?title=${encodeURIComponent("The Effects of Climate Change")}`
+    );
+  }
+};
+
 const applyDataLayerOpacity = (opacity) => {
   const clamped = Math.min(1, Math.max(0.2, opacity));
   dataLayerOpacity = clamped;
@@ -785,10 +821,10 @@ const showOnboardingIfNeeded = () => {
 const getLayerArticleLink = (layerId) => {
   const title = LAYER_ARTICLE_TITLES[layerId];
   if (!title) {
-    return "blog.html";
+    return resolveAppUrl("blog.html");
   }
 
-  return `article.html?title=${encodeURIComponent(title)}`;
+  return resolveAppUrl(`article.html?title=${encodeURIComponent(title)}`);
 };
 
 const updateDataInsightPanel = () => {
@@ -1978,6 +2014,7 @@ const bindControls = () => {
 
 const waitForBabylonAndStart = (retryCount = 0) => {
   initDomRefs();
+  configureStaticNavLinks();
   if (window.BABYLON) {
     bootstrap();
     return;
