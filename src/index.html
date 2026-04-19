@@ -250,6 +250,36 @@
               <span id="layer-opacity-value" class="range-value">95%</span>
             </div>
           </div>
+
+          <div class="control-group" aria-label="Story preset controls">
+            <p class="control-label">Story Presets</p>
+            <div class="control-row">
+              <button class="control-button" data-story-preset="climate-risk" type="button">
+                Climate Risk
+              </button>
+              <button class="control-button" data-story-preset="tectonic-hazard" type="button">
+                Tectonic Hazard
+              </button>
+              <button class="control-button" data-story-preset="biosphere" type="button">
+                Biosphere
+              </button>
+            </div>
+          </div>
+
+          <div class="control-group" aria-label="Performance quality controls">
+            <p class="control-label">Performance</p>
+            <div class="control-row">
+              <button class="control-button" data-quality-mode="high" type="button" aria-pressed="true">
+                High Quality
+              </button>
+              <button class="control-button" data-quality-mode="balanced" type="button" aria-pressed="false">
+                Balanced
+              </button>
+              <button class="control-button" data-quality-mode="performance" type="button" aria-pressed="false">
+                Performance
+              </button>
+            </div>
+          </div>
         </section>
 
         <button
@@ -260,6 +290,25 @@
         >
           Confirm Choices
         </button>
+      </section>
+
+      <section id="onboarding-overlay" class="onboarding-overlay hidden" aria-live="polite">
+        <div class="onboarding-card">
+          <p class="onboarding-kicker">Quick Tour</p>
+          <h2 id="onboarding-title" class="onboarding-title">Welcome to Explore Earth</h2>
+          <p id="onboarding-body" class="onboarding-body"></p>
+          <div class="onboarding-actions">
+            <button id="onboarding-skip" class="onboarding-button" type="button">Skip</button>
+            <button id="onboarding-next" class="onboarding-button primary" type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="fallback-panel" class="fallback-panel hidden" aria-live="polite">
+        <img src="assets/maps/earth_daymap.jpg" alt="2D Earth fallback map" />
+        <h2>2D Earth View</h2>
+        <p>The 3D engine could not start on this device. You can still explore educational content.</p>
+        <a href="blog.html">Open Blogs</a>
       </section>
     </main>
 
