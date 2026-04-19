@@ -27,6 +27,7 @@
     />
     <meta name="twitter:image" content="assets/og-preview.png" />
     <title>3D Geographic Data Dashboard</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="base.css" />
     <link rel="stylesheet" href="styles.css" />
     <link rel="preconnect" href="https://cdn.babylonjs.com" />
@@ -102,7 +103,6 @@
         aria-label="Globe controls"
         aria-hidden="true"
       >
-
         <section id="controls-dock" class="controls-dock" aria-label="Globe interaction controls">
           <div class="control-group" aria-label="Map mode controls">
             <p class="control-label">Map Mode</p>
@@ -204,10 +204,20 @@
           <div class="control-group" aria-label="Data layer controls">
             <p class="control-label">Data Layers</p>
             <div class="control-row">
-              <button class="control-button" data-layer="climate" type="button" aria-pressed="false">
+              <button
+                class="control-button"
+                data-layer="climate"
+                type="button"
+                aria-pressed="false"
+              >
                 Climate CO2
               </button>
-              <button class="control-button" data-layer="geology" type="button" aria-pressed="false">
+              <button
+                class="control-button"
+                data-layer="geology"
+                type="button"
+                aria-pressed="false"
+              >
                 Quakes
               </button>
               <button
@@ -218,10 +228,20 @@
               >
                 Coral Reefs
               </button>
-              <button class="control-button" data-layer="astronomy" type="button" aria-pressed="false">
+              <button
+                class="control-button"
+                data-layer="astronomy"
+                type="button"
+                aria-pressed="false"
+              >
                 Aurora Belt
               </button>
-              <button class="control-button" data-layer="ecology" type="button" aria-pressed="false">
+              <button
+                class="control-button"
+                data-layer="ecology"
+                type="button"
+                aria-pressed="false"
+              >
                 Forest Carbon
               </button>
               <button
@@ -270,13 +290,28 @@
           <div class="control-group" aria-label="Performance quality controls">
             <p class="control-label">Performance</p>
             <div class="control-row">
-              <button class="control-button" data-quality-mode="high" type="button" aria-pressed="true">
+              <button
+                class="control-button"
+                data-quality-mode="high"
+                type="button"
+                aria-pressed="true"
+              >
                 High Quality
               </button>
-              <button class="control-button" data-quality-mode="balanced" type="button" aria-pressed="false">
+              <button
+                class="control-button"
+                data-quality-mode="balanced"
+                type="button"
+                aria-pressed="false"
+              >
                 Balanced
               </button>
-              <button class="control-button" data-quality-mode="performance" type="button" aria-pressed="false">
+              <button
+                class="control-button"
+                data-quality-mode="performance"
+                type="button"
+                aria-pressed="false"
+              >
                 Performance
               </button>
             </div>
@@ -300,7 +335,9 @@
           <p id="onboarding-body" class="onboarding-body"></p>
           <div class="onboarding-actions">
             <button id="onboarding-skip" class="onboarding-button" type="button">Skip</button>
-            <button id="onboarding-next" class="onboarding-button primary" type="button">Next</button>
+            <button id="onboarding-next" class="onboarding-button primary" type="button">
+              Next
+            </button>
           </div>
         </div>
       </section>
@@ -308,7 +345,9 @@
       <section id="fallback-panel" class="fallback-panel hidden" aria-live="polite">
         <img src="assets/maps/earth_daymap.jpg" alt="2D Earth fallback map" />
         <h2>2D Earth View</h2>
-        <p>The 3D engine could not start on this device. You can still explore educational content.</p>
+        <p>
+          The 3D engine could not start on this device. You can still explore educational content.
+        </p>
         <a href="blog.html">Open Blogs</a>
       </section>
     </main>

@@ -1,249 +1,249 @@
 export const generatedLayers = {
-  "version": 1,
-  "builtAt": "2026-04-19T00:36:26.893Z",
-  "layers": {
-    "climate": {
-      "source": "Our World in Data, Global Carbon Project",
-      "sourceUrl": "https://ourworldindata.org/co2-and-greenhouse-gas-emissions",
-      "year": "2023",
-      "updated": "2026-03-15",
-      "unit": "MtCO2",
-      "records": [
+  version: 1,
+  builtAt: "2026-04-19T00:36:26.893Z",
+  layers: {
+    climate: {
+      source: "Our World in Data, Global Carbon Project",
+      sourceUrl: "https://ourworldindata.org/co2-and-greenhouse-gas-emissions",
+      year: "2023",
+      updated: "2026-03-15",
+      unit: "MtCO2",
+      records: [
         {
-          "id": "china",
-          "name": "China",
-          "latitude": 35.86,
-          "longitude": 104.19,
-          "value": 11472
+          id: "china",
+          name: "China",
+          latitude: 35.86,
+          longitude: 104.19,
+          value: 11472,
         },
         {
-          "id": "united-states",
-          "name": "United States",
-          "latitude": 37.09,
-          "longitude": -95.71,
-          "value": 5007
+          id: "united-states",
+          name: "United States",
+          latitude: 37.09,
+          longitude: -95.71,
+          value: 5007,
         },
         {
-          "id": "india",
-          "name": "India",
-          "latitude": 20.59,
-          "longitude": 78.96,
-          "value": 2741
+          id: "india",
+          name: "India",
+          latitude: 20.59,
+          longitude: 78.96,
+          value: 2741,
         },
         {
-          "id": "russia",
-          "name": "Russia",
-          "latitude": 61.52,
-          "longitude": 105.31,
-          "value": 1760
+          id: "russia",
+          name: "Russia",
+          latitude: 61.52,
+          longitude: 105.31,
+          value: 1760,
         },
         {
-          "id": "japan",
-          "name": "Japan",
-          "latitude": 36.2,
-          "longitude": 138.25,
-          "value": 1067
-        }
-      ]
+          id: "japan",
+          name: "Japan",
+          latitude: 36.2,
+          longitude: 138.25,
+          value: 1067,
+        },
+      ],
     },
-    "geology": {
-      "source": "USGS Earthquake Catalog",
-      "sourceUrl": "https://earthquake.usgs.gov/earthquakes/search/",
-      "year": "1906-2011",
-      "updated": "2026-03-15",
-      "unit": "Magnitude",
-      "records": [
+    geology: {
+      source: "USGS Earthquake Catalog",
+      sourceUrl: "https://earthquake.usgs.gov/earthquakes/search/",
+      year: "1906-2011",
+      updated: "2026-03-15",
+      unit: "Magnitude",
+      records: [
         {
-          "id": "chile-1960",
-          "name": "Chile 1960",
-          "latitude": -38.24,
-          "longitude": -73.05,
-          "value": 9.5
+          id: "chile-1960",
+          name: "Chile 1960",
+          latitude: -38.24,
+          longitude: -73.05,
+          value: 9.5,
         },
         {
-          "id": "alaska-1964",
-          "name": "Alaska 1964",
-          "latitude": 61.02,
-          "longitude": -147.65,
-          "value": 9.2
+          id: "alaska-1964",
+          name: "Alaska 1964",
+          latitude: 61.02,
+          longitude: -147.65,
+          value: 9.2,
         },
         {
-          "id": "sumatra-2004",
-          "name": "Indian Ocean 2004",
-          "latitude": 3.32,
-          "longitude": 95.85,
-          "value": 9.1
+          id: "sumatra-2004",
+          name: "Indian Ocean 2004",
+          latitude: 3.32,
+          longitude: 95.85,
+          value: 9.1,
         },
         {
-          "id": "tohoku-2011",
-          "name": "Japan 2011",
-          "latitude": 38.3,
-          "longitude": 142.37,
-          "value": 9.1
+          id: "tohoku-2011",
+          name: "Japan 2011",
+          latitude: 38.3,
+          longitude: 142.37,
+          value: 9.1,
         },
         {
-          "id": "kamchatka-1952",
-          "name": "Kamchatka 1952",
-          "latitude": 52.76,
-          "longitude": 160.06,
-          "value": 9
-        }
-      ]
+          id: "kamchatka-1952",
+          name: "Kamchatka 1952",
+          latitude: 52.76,
+          longitude: 160.06,
+          value: 9,
+        },
+      ],
     },
-    "oceanography": {
-      "source": "NOAA Coral Reef Watch, UNEP-WCMC",
-      "sourceUrl": "https://coralreefwatch.noaa.gov/",
-      "year": "2023",
-      "updated": "2026-03-15",
-      "unit": "Health Index",
-      "records": [
+    oceanography: {
+      source: "NOAA Coral Reef Watch, UNEP-WCMC",
+      sourceUrl: "https://coralreefwatch.noaa.gov/",
+      year: "2023",
+      updated: "2026-03-15",
+      unit: "Health Index",
+      records: [
         {
-          "id": "great-barrier",
-          "name": "Great Barrier",
-          "latitude": -18.29,
-          "longitude": 147.7,
-          "value": 62
+          id: "great-barrier",
+          name: "Great Barrier",
+          latitude: -18.29,
+          longitude: 147.7,
+          value: 62,
         },
         {
-          "id": "coral-triangle",
-          "name": "Coral Triangle",
-          "latitude": 0.6,
-          "longitude": 125.4,
-          "value": 55
+          id: "coral-triangle",
+          name: "Coral Triangle",
+          latitude: 0.6,
+          longitude: 125.4,
+          value: 55,
         },
         {
-          "id": "mesoamerican",
-          "name": "Mesoamerican",
-          "latitude": 18.2,
-          "longitude": -87.8,
-          "value": 58
+          id: "mesoamerican",
+          name: "Mesoamerican",
+          latitude: 18.2,
+          longitude: -87.8,
+          value: 58,
         },
         {
-          "id": "red-sea",
-          "name": "Red Sea",
-          "latitude": 20.4,
-          "longitude": 39.3,
-          "value": 64
+          id: "red-sea",
+          name: "Red Sea",
+          latitude: 20.4,
+          longitude: 39.3,
+          value: 64,
         },
         {
-          "id": "florida-reef",
-          "name": "Florida Reef",
-          "latitude": 24.7,
-          "longitude": -80.5,
-          "value": 46
-        }
-      ]
+          id: "florida-reef",
+          name: "Florida Reef",
+          latitude: 24.7,
+          longitude: -80.5,
+          value: 46,
+        },
+      ],
     },
-    "astronomy": {
-      "source": "NOAA SWPC, NASA heliophysics references",
-      "sourceUrl": "https://www.swpc.noaa.gov/",
-      "year": "Modeled climatology",
-      "updated": "2026-03-15",
-      "unit": "Latitude band",
-      "records": [
+    astronomy: {
+      source: "NOAA SWPC, NASA heliophysics references",
+      sourceUrl: "https://www.swpc.noaa.gov/",
+      year: "Modeled climatology",
+      updated: "2026-03-15",
+      unit: "Latitude band",
+      records: [
         {
-          "id": "north-aurora-band",
-          "name": "North Aurora Band",
-          "latitude": 67,
-          "longitude": 0,
-          "value": 67
+          id: "north-aurora-band",
+          name: "North Aurora Band",
+          latitude: 67,
+          longitude: 0,
+          value: 67,
         },
         {
-          "id": "south-aurora-band",
-          "name": "South Aurora Band",
-          "latitude": -67,
-          "longitude": 0,
-          "value": -67
-        }
-      ]
+          id: "south-aurora-band",
+          name: "South Aurora Band",
+          latitude: -67,
+          longitude: 0,
+          value: -67,
+        },
+      ],
     },
-    "ecology": {
-      "source": "FAO FRA, Global Forest Watch synthesis",
-      "sourceUrl": "https://fra-data.fao.org/",
-      "year": "2020-2023",
-      "updated": "2026-03-15",
-      "unit": "GtCO2e",
-      "records": [
+    ecology: {
+      source: "FAO FRA, Global Forest Watch synthesis",
+      sourceUrl: "https://fra-data.fao.org/",
+      year: "2020-2023",
+      updated: "2026-03-15",
+      unit: "GtCO2e",
+      records: [
         {
-          "id": "amazon",
-          "name": "Amazon",
-          "latitude": -3.47,
-          "longitude": -62.22,
-          "value": 123
+          id: "amazon",
+          name: "Amazon",
+          latitude: -3.47,
+          longitude: -62.22,
+          value: 123,
         },
         {
-          "id": "congo-basin",
-          "name": "Congo Basin",
-          "latitude": -1.64,
-          "longitude": 15.6,
-          "value": 66
+          id: "congo-basin",
+          name: "Congo Basin",
+          latitude: -1.64,
+          longitude: 15.6,
+          value: 66,
         },
         {
-          "id": "boreal-eurasia",
-          "name": "Boreal Eurasia",
-          "latitude": 61.2,
-          "longitude": 90.1,
-          "value": 95
+          id: "boreal-eurasia",
+          name: "Boreal Eurasia",
+          latitude: 61.2,
+          longitude: 90.1,
+          value: 95,
         },
         {
-          "id": "boreal-north-america",
-          "name": "Boreal North America",
-          "latitude": 57.6,
-          "longitude": -106.2,
-          "value": 72
+          id: "boreal-north-america",
+          name: "Boreal North America",
+          latitude: 57.6,
+          longitude: -106.2,
+          value: 72,
         },
         {
-          "id": "se-asia-rainforest",
-          "name": "SE Asia Rainforest",
-          "latitude": 1.3,
-          "longitude": 113.5,
-          "value": 43
-        }
-      ]
+          id: "se-asia-rainforest",
+          name: "SE Asia Rainforest",
+          latitude: 1.3,
+          longitude: 113.5,
+          value: 43,
+        },
+      ],
     },
-    "environmental": {
-      "source": "IRENA, IEA open datasets",
-      "sourceUrl": "https://www.irena.org/Data",
-      "year": "2023",
-      "updated": "2026-03-15",
-      "unit": "GW",
-      "records": [
+    environmental: {
+      source: "IRENA, IEA open datasets",
+      sourceUrl: "https://www.irena.org/Data",
+      year: "2023",
+      updated: "2026-03-15",
+      unit: "GW",
+      records: [
         {
-          "id": "gansu-wind",
-          "name": "Gansu Wind Base",
-          "latitude": 40.23,
-          "longitude": 96.58,
-          "value": 20
+          id: "gansu-wind",
+          name: "Gansu Wind Base",
+          latitude: 40.23,
+          longitude: 96.58,
+          value: 20,
         },
         {
-          "id": "california-solar",
-          "name": "California Solar",
-          "latitude": 35.37,
-          "longitude": -119.02,
-          "value": 18
+          id: "california-solar",
+          name: "California Solar",
+          latitude: 35.37,
+          longitude: -119.02,
+          value: 18,
         },
         {
-          "id": "north-sea-offshore",
-          "name": "North Sea Offshore",
-          "latitude": 56.2,
-          "longitude": 3.5,
-          "value": 27
+          id: "north-sea-offshore",
+          name: "North Sea Offshore",
+          latitude: 56.2,
+          longitude: 3.5,
+          value: 27,
         },
         {
-          "id": "rajasthan-solar",
-          "name": "Rajasthan Solar",
-          "latitude": 26.9,
-          "longitude": 73.1,
-          "value": 16
+          id: "rajasthan-solar",
+          name: "Rajasthan Solar",
+          latitude: 26.9,
+          longitude: 73.1,
+          value: 16,
         },
         {
-          "id": "brazil-hydro",
-          "name": "Brazil Hydro Belt",
-          "latitude": -4.6,
-          "longitude": -54.2,
-          "value": 19
-        }
-      ]
-    }
-  }
+          id: "brazil-hydro",
+          name: "Brazil Hydro Belt",
+          latitude: -4.6,
+          longitude: -54.2,
+          value: 19,
+        },
+      ],
+    },
+  },
 };

@@ -15,10 +15,17 @@
     "data:build": "node scripts/data/build-layers.mjs",
     "data:refresh": "npm run data:validate && npm run data:build"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "babylon",
+    "3d",
+    "globe",
+    "earth",
+    "data-visualization",
+    "webgl"
+  ],
+  "author": "Michael Blake Donaldson",
   "license": "ISC",
-  "description": "",
+  "description": "Interactive 3D Earth dashboard with scientific data layers, story presets, and an Earth science content hub. Built with Babylon.js and vanilla JS.",
   "dependencies": {
     "@babylonjs/core": "^7.35.1",
     "@babylonjs/gui": "^7.35.1",

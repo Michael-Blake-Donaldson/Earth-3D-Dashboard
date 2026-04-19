@@ -218,39 +218,59 @@ const LAYER_META = {
   climate: {
     category: "Climate",
     title: "Carbon Emission Hotspots",
-    summary: "Top national emitters scaled by annual fossil CO2 output. Useful for understanding mitigation priority.",
+    summary:
+      "Top national emitters scaled by annual fossil CO2 output. Useful for understanding mitigation priority.",
     stat: "Dataset: top 10 annual emitters, MtCO2 per year (OWID/Global Carbon Project style values).",
     source: getGeneratedLayerField("climate", "source", "Our World in Data, Global Carbon Project"),
-    sourceUrl: getGeneratedLayerField("climate", "sourceUrl", "https://ourworldindata.org/co2-and-greenhouse-gas-emissions"),
+    sourceUrl: getGeneratedLayerField(
+      "climate",
+      "sourceUrl",
+      "https://ourworldindata.org/co2-and-greenhouse-gas-emissions"
+    ),
     year: getGeneratedLayerField("climate", "year", "2023"),
     updated: getGeneratedLayerField("climate", "updated", "2026-03-15"),
   },
   geology: {
     category: "Geology",
     title: "Great Earthquake Belt",
-    summary: "Historic high-magnitude earthquakes illuminate subduction zones and plate-boundary hazard corridors.",
+    summary:
+      "Historic high-magnitude earthquakes illuminate subduction zones and plate-boundary hazard corridors.",
     stat: "Dataset: selected M8.6-M9.5 earthquakes with epicenter coordinates (USGS-style records).",
     source: getGeneratedLayerField("geology", "source", "USGS Earthquake Catalog"),
-    sourceUrl: getGeneratedLayerField("geology", "sourceUrl", "https://earthquake.usgs.gov/earthquakes/search/"),
+    sourceUrl: getGeneratedLayerField(
+      "geology",
+      "sourceUrl",
+      "https://earthquake.usgs.gov/earthquakes/search/"
+    ),
     year: getGeneratedLayerField("geology", "year", "1906-2011"),
     updated: getGeneratedLayerField("geology", "updated", "2026-03-15"),
   },
   oceanography: {
     category: "Oceanography",
     title: "Coral Reef Vital Zones",
-    summary: "Major reef systems in tropical seas. Marker intensity approximates present ecological condition.",
+    summary:
+      "Major reef systems in tropical seas. Marker intensity approximates present ecological condition.",
     stat: "Dataset: representative global reef clusters with health index (0-100).",
     source: getGeneratedLayerField("oceanography", "source", "NOAA Coral Reef Watch, UNEP-WCMC"),
-    sourceUrl: getGeneratedLayerField("oceanography", "sourceUrl", "https://coralreefwatch.noaa.gov/"),
+    sourceUrl: getGeneratedLayerField(
+      "oceanography",
+      "sourceUrl",
+      "https://coralreefwatch.noaa.gov/"
+    ),
     year: getGeneratedLayerField("oceanography", "year", "2023"),
     updated: getGeneratedLayerField("oceanography", "updated", "2026-03-15"),
   },
   astronomy: {
     category: "Astronomy",
     title: "Auroral Ovals",
-    summary: "Aurora belts show where charged particles from solar wind couple most strongly with Earth's magnetosphere.",
+    summary:
+      "Aurora belts show where charged particles from solar wind couple most strongly with Earth's magnetosphere.",
     stat: "Dataset: modeled mean auroral oval latitudes near +/-67 degrees geomagnetic latitude.",
-    source: getGeneratedLayerField("astronomy", "source", "NOAA SWPC, NASA heliophysics references"),
+    source: getGeneratedLayerField(
+      "astronomy",
+      "source",
+      "NOAA SWPC, NASA heliophysics references"
+    ),
     sourceUrl: getGeneratedLayerField("astronomy", "sourceUrl", "https://www.swpc.noaa.gov/"),
     year: getGeneratedLayerField("astronomy", "year", "Modeled climatology"),
     updated: getGeneratedLayerField("astronomy", "updated", "2026-03-15"),
@@ -258,7 +278,8 @@ const LAYER_META = {
   ecology: {
     category: "Ecology",
     title: "Forest Carbon Reservoirs",
-    summary: "Large biomes storing major terrestrial carbon stocks. Taller bars indicate larger carbon storage.",
+    summary:
+      "Large biomes storing major terrestrial carbon stocks. Taller bars indicate larger carbon storage.",
     stat: "Dataset: regional forest biomass carbon estimates in GtCO2-equivalent.",
     source: getGeneratedLayerField("ecology", "source", "FAO FRA, Global Forest Watch synthesis"),
     sourceUrl: getGeneratedLayerField("ecology", "sourceUrl", "https://fra-data.fao.org/"),
@@ -268,7 +289,8 @@ const LAYER_META = {
   environmental: {
     category: "Environmental Science",
     title: "Renewable Energy Hubs",
-    summary: "High-capacity solar, wind, hydro, and hybrid zones that anchor clean-grid transitions.",
+    summary:
+      "High-capacity solar, wind, hydro, and hybrid zones that anchor clean-grid transitions.",
     stat: "Dataset: representative utility-scale renewable clusters with capacity in GW.",
     source: getGeneratedLayerField("environmental", "source", "IRENA, IEA open datasets"),
     sourceUrl: getGeneratedLayerField("environmental", "sourceUrl", "https://www.irena.org/Data"),
@@ -862,9 +884,7 @@ const updateDataInsightPanel = () => {
   dataInsightTitle.textContent = meta.title;
   dataInsightSummary.textContent = meta.summary;
   dataInsightStat.textContent =
-    activeLayers.length > 1
-      ? `${meta.stat} Active layers: ${activeLayers.length}.`
-      : meta.stat;
+    activeLayers.length > 1 ? `${meta.stat} Active layers: ${activeLayers.length}.` : meta.stat;
   dataInsightSource.textContent = `Source: ${meta.source}`;
   dataInsightUpdated.textContent = `Coverage year: ${meta.year} | Refreshed: ${meta.updated}`;
   dataInsightLink.href = getLayerArticleLink(focusLayer);
@@ -1188,7 +1208,11 @@ const startParticleAssemblyIntro = (sceneRef, onProgress = () => {}) => {
   const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
   return new Promise((resolve) => {
-    const particles = new BABYLON.PointsCloudSystem("earthAssemblyIntro", { pointSize: 2.2 }, sceneRef);
+    const particles = new BABYLON.PointsCloudSystem(
+      "earthAssemblyIntro",
+      { pointSize: 2.2 },
+      sceneRef
+    );
     const targetPositions = [];
     const driftVectors = [];
     const phaseOffsets = [];
@@ -1199,11 +1223,19 @@ const startParticleAssemblyIntro = (sceneRef, onProgress = () => {}) => {
       const radial = Math.sqrt(Math.max(0, 1 - y * y));
       const theta = GOLDEN_ANGLE * index;
       targetPositions.push(
-        new BABYLON.Vector3(Math.cos(theta) * radial * EARTH_RADIUS, y * EARTH_RADIUS, Math.sin(theta) * radial * EARTH_RADIUS)
+        new BABYLON.Vector3(
+          Math.cos(theta) * radial * EARTH_RADIUS,
+          y * EARTH_RADIUS,
+          Math.sin(theta) * radial * EARTH_RADIUS
+        )
       );
 
       driftVectors.push(
-        new BABYLON.Vector3((Math.random() - 0.5) * 0.02, (Math.random() - 0.5) * 0.02, (Math.random() - 0.5) * 0.02)
+        new BABYLON.Vector3(
+          (Math.random() - 0.5) * 0.02,
+          (Math.random() - 0.5) * 0.02,
+          (Math.random() - 0.5) * 0.02
+        )
       );
       phaseOffsets.push(Math.random() * Math.PI * 2);
       orbitOffsets.push(Math.random() * Math.PI * 2);
@@ -1261,8 +1293,14 @@ const startParticleAssemblyIntro = (sceneRef, onProgress = () => {}) => {
           particle.position.z += (target.z - particle.position.z) * pullForce;
 
           const shimmer = (1 - joinStrength) * 0.13;
-          particle.color.r = 0.54 + joinStrength * 0.24 + Math.sin(elapsed * 3 + phaseOffsets[index]) * shimmer * 0.07;
-          particle.color.g = 0.67 + joinStrength * 0.2 + Math.cos(elapsed * 2.4 + phaseOffsets[index]) * shimmer * 0.07;
+          particle.color.r =
+            0.54 +
+            joinStrength * 0.24 +
+            Math.sin(elapsed * 3 + phaseOffsets[index]) * shimmer * 0.07;
+          particle.color.g =
+            0.67 +
+            joinStrength * 0.2 +
+            Math.cos(elapsed * 2.4 + phaseOffsets[index]) * shimmer * 0.07;
           particle.color.b = 0.8 + joinStrength * 0.14;
           particle.color.a = 0.35 + joinStrength * 0.65;
           return particle;
@@ -1333,7 +1371,11 @@ const runMeshTransitionParticles = (sceneRef, fromMeshMode, toMeshMode) => {
     targetPoints.push(getMeshSurfacePoint(toMeshMode, index, particleCount, 1));
   }
 
-  const particles = new BABYLON.PointsCloudSystem("meshSwitchParticles", { pointSize: 2.1 }, sceneRef);
+  const particles = new BABYLON.PointsCloudSystem(
+    "meshSwitchParticles",
+    { pointSize: 2.1 },
+    sceneRef
+  );
 
   particles.addPoints(particleCount, (particle, index) => {
     particle.position = sourcePoints[index].clone();
@@ -1342,39 +1384,40 @@ const runMeshTransitionParticles = (sceneRef, fromMeshMode, toMeshMode) => {
 
   return particles
     .buildMeshAsync()
-    .then(() =>
-      new Promise((resolve) => {
-        const startTs = performance.now();
-        let blend = 0;
+    .then(
+      () =>
+        new Promise((resolve) => {
+          const startTs = performance.now();
+          let blend = 0;
 
-        particles.updateParticle = (particle) => {
-          const idx = particle.idx;
-          const eased = BABYLON.Scalar.SmoothStep(0, 1, blend);
-          const from = sourcePoints[idx];
-          const to = targetPoints[idx];
+          particles.updateParticle = (particle) => {
+            const idx = particle.idx;
+            const eased = BABYLON.Scalar.SmoothStep(0, 1, blend);
+            const from = sourcePoints[idx];
+            const to = targetPoints[idx];
 
-          particle.position.x = from.x + (to.x - from.x) * eased;
-          particle.position.y = from.y + (to.y - from.y) * eased;
-          particle.position.z = from.z + (to.z - from.z) * eased;
+            particle.position.x = from.x + (to.x - from.x) * eased;
+            particle.position.y = from.y + (to.y - from.y) * eased;
+            particle.position.z = from.z + (to.z - from.z) * eased;
 
-          particle.color.r = 0.56 + eased * 0.2;
-          particle.color.g = 0.72 + eased * 0.14;
-          particle.color.b = 0.85 + eased * 0.1;
-          particle.color.a = 0.38 + eased * 0.62;
-          return particle;
-        };
+            particle.color.r = 0.56 + eased * 0.2;
+            particle.color.g = 0.72 + eased * 0.14;
+            particle.color.b = 0.85 + eased * 0.1;
+            particle.color.a = 0.38 + eased * 0.62;
+            return particle;
+          };
 
-        const observer = sceneRef.onBeforeRenderObservable.add(() => {
-          blend = BABYLON.Scalar.Clamp((performance.now() - startTs) / durationMs, 0, 1);
-          particles.setParticles();
+          const observer = sceneRef.onBeforeRenderObservable.add(() => {
+            blend = BABYLON.Scalar.Clamp((performance.now() - startTs) / durationMs, 0, 1);
+            particles.setParticles();
 
-          if (blend >= 1) {
-            sceneRef.onBeforeRenderObservable.remove(observer);
-            particles.dispose();
-            resolve();
-          }
-        });
-      })
+            if (blend >= 1) {
+              sceneRef.onBeforeRenderObservable.remove(observer);
+              particles.dispose();
+              resolve();
+            }
+          });
+        })
     )
     .catch((error) => {
       console.warn("Mesh transition particle effect failed, applying mesh directly.", error);
@@ -1606,7 +1649,7 @@ const setSpinEffect = (isActive) => {
 };
 
 const buildMeshSet = (meshMode) => {
-  if (!scene || !meshSetCache[meshMode] && !materials.earth) {
+  if (!scene || (!meshSetCache[meshMode] && !materials.earth)) {
     return;
   }
 
