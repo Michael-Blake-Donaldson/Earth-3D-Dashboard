@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const categoryFilters = document.getElementById("category-filters");
   const allCategories = [...new Set(articles.map((article) => article.category))].sort();
   let activeCategory = "";
+  let renderToken = 0;
 
   if (!articlesContainer) {
     console.error('Element with id "articles" not found.');
@@ -44,6 +45,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 <p>No category matched "${cleanFilter}". Try Climate, Geology, Oceanography, Astronomy, Ecology, or Environmental Science.</p>
             </div>
         `;
+  };
+
+  const applyCardStagger = () => {
+    const cards = articlesContainer.querySelectorAll(".article");
+    cards.forEach((card, index) => {
+      card.style.setProperty("--stagger-index", String(index));
+    });
   };
 
   const updateStatus = (count, filter) => {
@@ -102,6 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const renderArticles = (filter = "") => {
+    const token = renderToken + 1;
+    renderToken = token;
+    articlesContainer.classList.add("is-filtering");
+
     const normalizedFilter = filter.trim().toLowerCase();
     const filteredArticles = filterArticlesByCategory(articles, normalizedFilter);
 
@@ -109,14 +121,23 @@ document.addEventListener("DOMContentLoaded", () => {
       allCategories.find((category) => category.toLowerCase() === normalizedFilter) || "";
     setActiveChip(activeCategory);
 
-    if (!filteredArticles.length) {
-      renderEmptyState(filter.trim());
-      updateStatus(0, filter.trim());
-      return;
-    }
+    window.setTimeout(() => {
+      if (token !== renderToken) {
+        return;
+      }
 
-    articlesContainer.innerHTML = filteredArticles.map(renderArticleCard).join("");
-    updateStatus(filteredArticles.length, filter.trim());
+      if (!filteredArticles.length) {
+        renderEmptyState(filter.trim());
+        updateStatus(0, filter.trim());
+        articlesContainer.classList.remove("is-filtering");
+        return;
+      }
+
+      articlesContainer.innerHTML = filteredArticles.map(renderArticleCard).join("");
+      applyCardStagger();
+      updateStatus(filteredArticles.length, filter.trim());
+      articlesContainer.classList.remove("is-filtering");
+    }, 90);
   };
 
   renderArticles();

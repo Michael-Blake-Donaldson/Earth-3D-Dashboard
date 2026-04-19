@@ -198,7 +198,7 @@ const beginMenuReengageSequence = () => {
   menuReengageFrameId = window.requestAnimationFrame(tick);
 };
 
-const resetGlobeView = () => {
+const resetCameraView = () => {
   if (!camera) {
     return;
   }
@@ -234,6 +234,29 @@ const resetGlobeView = () => {
   }
 
   animateCameraRadius(defaultRadius, 26);
+};
+
+const resetEarthState = () => {
+  if (!scene || !camera) {
+    setStatus("Scene is still loading...");
+    return;
+  }
+
+  pendingSelection = null;
+
+  if (controlsOverlay && !controlsOverlay.classList.contains("hidden")) {
+    hideControlsOverlay();
+  }
+
+  buildMeshSet("sphere");
+  applyMapMode("day");
+  applySkinMode("realistic");
+  setAtmosphereEffect(true);
+  setGlowEffect(false);
+  setSpinEffect(false);
+  setCurrentGlobeVisibility(true);
+  resetCameraView();
+  setStatus("Earth view reset.");
 };
 
 const showControlsOverlay = () => {
@@ -1073,7 +1096,7 @@ const bindControls = () => {
       }
 
       if (action === "reset-view") {
-        resetGlobeView();
+        resetEarthState();
       }
     });
   });

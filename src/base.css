@@ -25,8 +25,9 @@ body {
   padding: 0;
   color: var(--color-text);
   font-family: "Space Grotesk", Arial, sans-serif;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: linear-gradient(135deg, #a8bbd1 0%, #9aacbe 50%, #8fa5bb 100%);
 }
 
