@@ -39,6 +39,20 @@ Earth 3D Dashboard is a polished static front-end project featuring an interacti
 - npm run test
 - npm run verify
 
+## Data Pipeline
+
+The globe data layers now support a raw-to-processed workflow for maintainability and verification.
+
+- Raw source file: data/raw/layers.json
+- Processed archive: data/processed/layers.processed.json
+- App runtime module: src/data/layers/generatedLayers.js
+
+Commands:
+
+- npm run data:validate
+- npm run data:build
+- npm run data:refresh
+
 ## Stage Commits Implemented
 
 - Phase 1: Baseline behavior and regression specification

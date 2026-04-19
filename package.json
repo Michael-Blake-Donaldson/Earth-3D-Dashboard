@@ -10,7 +10,10 @@
     "format:check": "prettier . --check",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify": "npm run lint && npm run format:check && npm run test"
+    "verify": "npm run lint && npm run format:check && npm run test",
+    "data:validate": "node scripts/data/validate-layers.mjs",
+    "data:build": "node scripts/data/build-layers.mjs",
+    "data:refresh": "npm run data:validate && npm run data:build"
   },
   "keywords": [],
   "author": "",
