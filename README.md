@@ -4,8 +4,6 @@
 
 ![Earth 3D Dashboard — interactive globe with atmosphere shell and NASA day texture](docs/preview.png)
 
-**[Live Demo →](https://michael-blake-donaldson.github.io/Earth-3D-Dashboard/)**
-
 An interactive 3D Earth visualization and science content hub. Explore real planetary data — climate emissions, earthquake sites, coral reef health, aurora zones, forest carbon stores, and renewable energy hubs — rendered directly on a rotatable 3D globe. Each data layer links to a curated Earth science article for deeper context.
 
 ---
@@ -129,16 +127,6 @@ npm run data:refresh   # validate + build
 
 ---
 
-## License
-
-ISC
-
-- Phase 4: Modular data flow and safe article rendering
-- Phase 5: 3D startup hardening and stable mode toggles
-- Phase 6: Search/content UX polish
-- Phase 7: Linting, formatting, testing, and CI setup
-- Phase 8: Verification docs and repository hygiene
-
 ## Notes
 
-This project is optimized as a portfolio showcase and local static project.
+This project is optimized as a local static project.
