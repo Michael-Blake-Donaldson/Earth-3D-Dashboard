@@ -6,11 +6,18 @@ let heroContent;
 let controlsOverlay;
 let startButton;
 let confirmControls;
+let dataInsightPanel;
+let dataInsightKicker;
+let dataInsightTitle;
+let dataInsightSummary;
+let dataInsightStat;
+let dataInsightLink;
 
 let mapButtons = [];
 let skinButtons = [];
 let meshButtons = [];
 let effectButtons = [];
+let dataLayerButtons = [];
 let controlButtons = [];
 let navActionLinks = [];
 
@@ -23,10 +30,17 @@ const initDomRefs = () => {
   controlsOverlay = document.getElementById("controls-overlay");
   startButton = document.getElementById("start-button");
   confirmControls = document.getElementById("confirm-controls");
+  dataInsightPanel = document.getElementById("data-insight-panel");
+  dataInsightKicker = document.getElementById("data-insight-kicker");
+  dataInsightTitle = document.getElementById("data-insight-title");
+  dataInsightSummary = document.getElementById("data-insight-summary");
+  dataInsightStat = document.getElementById("data-insight-stat");
+  dataInsightLink = document.getElementById("data-insight-link");
   mapButtons = [...document.querySelectorAll("[data-map-mode]")];
   skinButtons = [...document.querySelectorAll("[data-skin-mode]")];
   meshButtons = [...document.querySelectorAll("[data-mesh-mode]")];
   effectButtons = [...document.querySelectorAll("[data-effect]")];
+  dataLayerButtons = [...document.querySelectorAll("[data-layer]")];
   controlButtons = [...document.querySelectorAll(".control-button")];
   navActionLinks = [...document.querySelectorAll("[data-nav-action]")];
 };
@@ -48,6 +62,8 @@ let radiusBeforeMenuOpen = null;
 let isMenuReengageInProgress = false;
 let isMenuReengageReady = false;
 let menuReengageFrameId = 0;
+let pendingResetRequest = false;
+let layerRegistry = {};
 
 const meshSetCache = {
   sphere: null,
@@ -64,12 +80,124 @@ const effectsState = {
   spin: false,
 };
 
+const dataLayerState = {
+  climate: false,
+  geology: false,
+  oceanography: false,
+  astronomy: false,
+  ecology: false,
+  environmental: false,
+};
+
 const materials = {
   earth: null,
   population: null,
   night: null,
   atmosphere: null,
   cloud: null,
+};
+
+const CLIMATE_EMISSIONS = [
+  { name: "China", lat: 35.86, lon: 104.19, mtco2: 11472 },
+  { name: "United States", lat: 37.09, lon: -95.71, mtco2: 5007 },
+  { name: "India", lat: 20.59, lon: 78.96, mtco2: 2741 },
+  { name: "Russia", lat: 61.52, lon: 105.31, mtco2: 1760 },
+  { name: "Japan", lat: 36.2, lon: 138.25, mtco2: 1067 },
+  { name: "Iran", lat: 32.43, lon: 53.69, mtco2: 745 },
+  { name: "Germany", lat: 51.16, lon: 10.45, mtco2: 675 },
+  { name: "Indonesia", lat: -0.79, lon: 113.92, mtco2: 619 },
+  { name: "Saudi Arabia", lat: 23.89, lon: 45.08, mtco2: 615 },
+  { name: "South Korea", lat: 35.91, lon: 127.77, mtco2: 598 },
+];
+
+const GEOLOGY_MAJOR_QUAKES = [
+  { name: "Chile 1960", lat: -38.24, lon: -73.05, magnitude: 9.5 },
+  { name: "Alaska 1964", lat: 61.02, lon: -147.65, magnitude: 9.2 },
+  { name: "Indian Ocean 2004", lat: 3.32, lon: 95.85, magnitude: 9.1 },
+  { name: "Japan 2011", lat: 38.3, lon: 142.37, magnitude: 9.1 },
+  { name: "Kamchatka 1952", lat: 52.76, lon: 160.06, magnitude: 9 },
+  { name: "Ecuador 1906", lat: 1.0, lon: -81.5, magnitude: 8.8 },
+  { name: "Maule 2010", lat: -35.91, lon: -72.73, magnitude: 8.8 },
+  { name: "Tibet 1950", lat: 28.5, lon: 96.5, magnitude: 8.6 },
+];
+
+const OCEAN_MAJOR_REEFS = [
+  { name: "Great Barrier", lat: -18.29, lon: 147.7, health: 62 },
+  { name: "Coral Triangle", lat: 0.6, lon: 125.4, health: 55 },
+  { name: "Mesoamerican", lat: 18.2, lon: -87.8, health: 58 },
+  { name: "Red Sea", lat: 20.4, lon: 39.3, health: 64 },
+  { name: "New Caledonia", lat: -20.9, lon: 165.6, health: 60 },
+  { name: "Maldives", lat: 3.2, lon: 73.2, health: 57 },
+  { name: "Florida Reef", lat: 24.7, lon: -80.5, health: 46 },
+  { name: "Andaman", lat: 11.5, lon: 92.7, health: 59 },
+];
+
+const ECOLOGY_FOREST_CARBON = [
+  { name: "Amazon", lat: -3.47, lon: -62.22, gtco2: 123 },
+  { name: "Congo Basin", lat: -1.64, lon: 15.6, gtco2: 66 },
+  { name: "Boreal Eurasia", lat: 61.2, lon: 90.1, gtco2: 95 },
+  { name: "Boreal North America", lat: 57.6, lon: -106.2, gtco2: 72 },
+  { name: "SE Asia Rainforest", lat: 1.3, lon: 113.5, gtco2: 43 },
+  { name: "Temperate Europe", lat: 49.7, lon: 12.8, gtco2: 26 },
+];
+
+const ENVIRONMENTAL_RENEWABLE_HUBS = [
+  { name: "Gansu Wind Base", lat: 40.23, lon: 96.58, gw: 20 },
+  { name: "California Solar", lat: 35.37, lon: -119.02, gw: 18 },
+  { name: "North Sea Offshore", lat: 56.2, lon: 3.5, gw: 27 },
+  { name: "Rajasthan Solar", lat: 26.9, lon: 73.1, gw: 16 },
+  { name: "Brazil Hydro Belt", lat: -4.6, lon: -54.2, gw: 19 },
+  { name: "Morocco Noor", lat: 30.9, lon: -6.9, gw: 6 },
+  { name: "Australia REZ", lat: -31.6, lon: 149.3, gw: 12 },
+  { name: "Chile Atacama", lat: -23.6, lon: -68.2, gw: 10 },
+];
+
+const LAYER_ARTICLE_TITLES = {
+  climate: "The Effects of Climate Change",
+  geology: "The Formation of Mountains",
+  oceanography: "Coral Reefs: The Rainforests of the Sea",
+  astronomy: "The Earth's Magnetic Field",
+  ecology: "The Role of Forests in Earth's Ecosystem",
+  environmental: "The Science of Renewable Energy",
+};
+
+const LAYER_META = {
+  climate: {
+    category: "Climate",
+    title: "Carbon Emission Hotspots",
+    summary: "Top national emitters scaled by annual fossil CO2 output. Useful for understanding mitigation priority.",
+    stat: "Dataset: top 10 annual emitters, MtCO2 per year (OWID/Global Carbon Project style values).",
+  },
+  geology: {
+    category: "Geology",
+    title: "Great Earthquake Belt",
+    summary: "Historic high-magnitude earthquakes illuminate subduction zones and plate-boundary hazard corridors.",
+    stat: "Dataset: selected M8.6-M9.5 earthquakes with epicenter coordinates (USGS-style records).",
+  },
+  oceanography: {
+    category: "Oceanography",
+    title: "Coral Reef Vital Zones",
+    summary: "Major reef systems in tropical seas. Marker intensity approximates present ecological condition.",
+    stat: "Dataset: representative global reef clusters with health index (0-100).",
+  },
+  astronomy: {
+    category: "Astronomy",
+    title: "Auroral Ovals",
+    summary: "Aurora belts show where charged particles from solar wind couple most strongly with Earth's magnetosphere.",
+    stat: "Dataset: modeled mean auroral oval latitudes near +/-67 degrees geomagnetic latitude.",
+  },
+  ecology: {
+    category: "Ecology",
+    title: "Forest Carbon Reservoirs",
+    summary: "Large biomes storing major terrestrial carbon stocks. Taller bars indicate larger carbon storage.",
+    stat: "Dataset: regional forest biomass carbon estimates in GtCO2-equivalent.",
+  },
+  environmental: {
+    category: "Environmental Science",
+    title: "Renewable Energy Hubs",
+    summary: "High-capacity solar, wind, hydro, and hybrid zones that anchor clean-grid transitions.",
+    stat: "Dataset: representative utility-scale renewable clusters with capacity in GW.",
+  },
 };
 
 const safeAddEventListener = (element, eventName, handler) => {
@@ -236,9 +364,8 @@ const resetCameraView = () => {
   animateCameraRadius(defaultRadius, 26);
 };
 
-const resetEarthState = () => {
+const applyDefaultEarthState = (showStatusMessage = false) => {
   if (!scene || !camera) {
-    setStatus("Scene is still loading...");
     return;
   }
 
@@ -251,12 +378,28 @@ const resetEarthState = () => {
   buildMeshSet("sphere");
   applyMapMode("day");
   applySkinMode("realistic");
+  Object.keys(dataLayerState).forEach((layerId) => {
+    applyDataLayerState(layerId, false);
+  });
   setAtmosphereEffect(true);
   setGlowEffect(false);
   setSpinEffect(false);
   setCurrentGlobeVisibility(true);
   resetCameraView();
-  setStatus("Earth view reset.");
+
+  if (showStatusMessage) {
+    setStatus("Earth view reset.");
+  }
+};
+
+const resetEarthState = () => {
+  if (!scene || !camera || isApplyingSelection) {
+    pendingResetRequest = true;
+    setStatus("Reset queued until scene is ready...");
+    return;
+  }
+
+  applyDefaultEarthState(true);
 };
 
 const showControlsOverlay = () => {
@@ -287,6 +430,7 @@ const showControlsOverlay = () => {
     mapMode: currentMapMode,
     skinMode: currentSkinMode,
     meshMode: currentMeshMode,
+    dataLayers: { ...dataLayerState },
     effects: {
       atmosphere: effectsState.atmosphere,
       glow: effectsState.glow,
@@ -297,6 +441,9 @@ const showControlsOverlay = () => {
   setButtonGroupState(mapButtons, pendingSelection.mapMode, "data-map-mode");
   setButtonGroupState(skinButtons, pendingSelection.skinMode, "data-skin-mode");
   setButtonGroupState(meshButtons, pendingSelection.meshMode, "data-mesh-mode");
+  Object.entries(pendingSelection.dataLayers).forEach(([layerId, isActive]) => {
+    setDataLayerButtonState(layerId, Boolean(isActive));
+  });
   setEffectButtonState("atmosphere", pendingSelection.effects.atmosphere);
   setEffectButtonState("glow", pendingSelection.effects.glow);
   setEffectButtonState("spin", pendingSelection.effects.spin);
@@ -355,6 +502,307 @@ const setEffectButtonState = (effectName, active) => {
 
   button.classList.toggle("active", active);
   button.setAttribute("aria-pressed", String(active));
+};
+
+const setDataLayerButtonState = (layerId, active) => {
+  const button = dataLayerButtons.find((item) => item.dataset.layer === layerId);
+  if (!button) {
+    return;
+  }
+
+  button.classList.toggle("active", active);
+  button.setAttribute("aria-pressed", String(active));
+};
+
+const getLayerArticleLink = (layerId) => {
+  const title = LAYER_ARTICLE_TITLES[layerId];
+  if (!title) {
+    return "blog.html";
+  }
+
+  return `article.html?title=${encodeURIComponent(title)}`;
+};
+
+const updateDataInsightPanel = () => {
+  if (
+    !dataInsightPanel ||
+    !dataInsightKicker ||
+    !dataInsightTitle ||
+    !dataInsightSummary ||
+    !dataInsightStat ||
+    !dataInsightLink
+  ) {
+    return;
+  }
+
+  const activeLayers = Object.entries(dataLayerState)
+    .filter(([, isActive]) => isActive)
+    .map(([layerId]) => layerId);
+
+  if (!activeLayers.length) {
+    dataInsightPanel.classList.add("hidden");
+    return;
+  }
+
+  const focusLayer = activeLayers[activeLayers.length - 1];
+  const meta = LAYER_META[focusLayer];
+  if (!meta) {
+    dataInsightPanel.classList.add("hidden");
+    return;
+  }
+
+  dataInsightPanel.classList.remove("hidden");
+  dataInsightKicker.textContent = `${meta.category} Layer`;
+  dataInsightTitle.textContent = meta.title;
+  dataInsightSummary.textContent = meta.summary;
+  dataInsightStat.textContent =
+    activeLayers.length > 1
+      ? `${meta.stat} Active layers: ${activeLayers.length}.`
+      : meta.stat;
+  dataInsightLink.href = getLayerArticleLink(focusLayer);
+  dataInsightLink.textContent = `Read ${meta.category} article`;
+};
+
+const latLonToVector3 = (lat, lon, radius = 1) => {
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = (lon + 180) * (Math.PI / 180);
+
+  return new BABYLON.Vector3(
+    -radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta)
+  );
+};
+
+const createLatitudeBand = (lat, radius = 1.03, segments = 96) => {
+  const points = [];
+  for (let step = 0; step <= segments; step += 1) {
+    const lon = -180 + (360 * step) / segments;
+    points.push(latLonToVector3(lat, lon, radius));
+  }
+
+  return points;
+};
+
+const createRingAtLocation = (lat, lon, radius = 1.024, ringRadius = 0.045, segments = 20) => {
+  const center = latLonToVector3(lat, lon, radius);
+  const normal = center.normalize();
+  const axisA = BABYLON.Vector3.Cross(normal, BABYLON.Axis.Y);
+  if (axisA.lengthSquared() < 0.0001) {
+    axisA.copyFrom(BABYLON.Axis.X);
+  }
+  axisA.normalize();
+  const axisB = BABYLON.Vector3.Cross(normal, axisA).normalize();
+
+  const points = [];
+  for (let index = 0; index <= segments; index += 1) {
+    const angle = (index / segments) * Math.PI * 2;
+    const offsetA = axisA.scale(Math.cos(angle) * ringRadius);
+    const offsetB = axisB.scale(Math.sin(angle) * ringRadius);
+    const onSurface = center.add(offsetA).add(offsetB).normalize().scale(radius);
+    points.push(onSurface);
+  }
+
+  return points;
+};
+
+const createPopulationHeatmapTexture = (sceneRef, onLoaded) => {
+  const width = 2048;
+  const height = 1024;
+  const texture = new BABYLON.DynamicTexture(
+    "populationHeatmapTexture",
+    { width, height },
+    sceneRef,
+    false,
+    BABYLON.Texture.BILINEAR_SAMPLINGMODE
+  );
+  const context = texture.getContext();
+
+  context.clearRect(0, 0, width, height);
+  context.fillStyle = "rgba(4, 8, 18, 0.22)";
+  context.fillRect(0, 0, width, height);
+
+  const maxCo2 = Math.max(...CLIMATE_EMISSIONS.map((entry) => entry.mtco2));
+  CLIMATE_EMISSIONS.forEach((entry) => {
+    const x = ((entry.lon + 180) / 360) * width;
+    const y = ((90 - entry.lat) / 180) * height;
+    const normalized = entry.mtco2 / maxCo2;
+    const radius = 18 + normalized * 56;
+
+    const gradient = context.createRadialGradient(x, y, 0, x, y, radius);
+    gradient.addColorStop(0, `rgba(255, 226, 136, ${0.2 + normalized * 0.32})`);
+    gradient.addColorStop(0.5, `rgba(255, 126, 82, ${0.24 + normalized * 0.34})`);
+    gradient.addColorStop(1, "rgba(84, 12, 36, 0)");
+
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.fill();
+  });
+
+  const legendX = 36;
+  const legendY = height - 130;
+  const gradientBar = context.createLinearGradient(legendX, 0, legendX + 200, 0);
+  gradientBar.addColorStop(0, "rgba(255, 220, 130, 0.85)");
+  gradientBar.addColorStop(1, "rgba(255, 110, 66, 0.95)");
+  context.fillStyle = "rgba(8, 14, 28, 0.68)";
+  context.fillRect(legendX - 14, legendY - 32, 256, 70);
+  context.fillStyle = gradientBar;
+  context.fillRect(legendX, legendY, 200, 14);
+  context.fillStyle = "rgba(224, 237, 255, 0.95)";
+  context.font = "22px IBM Plex Sans, Arial";
+  context.fillText("Annual CO2 intensity", legendX, legendY - 8);
+  context.font = "18px IBM Plex Sans, Arial";
+  context.fillText("lower", legendX, legendY + 34);
+  context.fillText("higher", legendX + 154, legendY + 34);
+
+  texture.vScale = -1;
+  texture.update(false);
+  onLoaded();
+  return texture;
+};
+
+const createDataLayerRegistry = (sceneRef) => {
+  const climateLines = CLIMATE_EMISSIONS.map((entry) => {
+    const normalized = entry.mtco2 / 11472;
+    const start = latLonToVector3(entry.lat, entry.lon, 1.014);
+    const end = latLonToVector3(entry.lat, entry.lon, 1.014 + 0.07 + normalized * 0.42);
+    return [start, end];
+  });
+  const climateMesh = BABYLON.MeshBuilder.CreateLineSystem(
+    "climateEmissionsLayer",
+    { lines: climateLines, updatable: false },
+    sceneRef
+  );
+  climateMesh.color = new BABYLON.Color3(1, 0.58, 0.35);
+  climateMesh.alpha = 0.94;
+  climateMesh.setEnabled(false);
+
+  const geologyLines = GEOLOGY_MAJOR_QUAKES.map((quake) => {
+    const normalized = (quake.magnitude - 8.6) / (9.5 - 8.6);
+    const start = latLonToVector3(quake.lat, quake.lon, 1.018);
+    const end = latLonToVector3(quake.lat, quake.lon, 1.018 + 0.05 + normalized * 0.22);
+    return [start, end];
+  });
+
+  const quakeRings = GEOLOGY_MAJOR_QUAKES.map((quake) =>
+    createRingAtLocation(quake.lat, quake.lon, 1.022, 0.018 + (quake.magnitude - 8.6) * 0.012)
+  );
+
+  const geologyMesh = BABYLON.MeshBuilder.CreateLineSystem(
+    "geologyQuakeLayer",
+    { lines: [...geologyLines, ...quakeRings], updatable: false },
+    sceneRef
+  );
+  geologyMesh.color = new BABYLON.Color3(0.98, 0.45, 0.56);
+  geologyMesh.alpha = 0.94;
+  geologyMesh.setEnabled(false);
+
+  const oceanMaterial = new BABYLON.StandardMaterial("oceanReefMarkerMaterial", sceneRef);
+  oceanMaterial.disableLighting = true;
+  oceanMaterial.emissiveColor = new BABYLON.Color3(0.35, 0.92, 0.82);
+  const oceanRoot = new BABYLON.TransformNode("oceanReefLayerRoot", sceneRef);
+  const oceanBaseMarker = BABYLON.MeshBuilder.CreateSphere(
+    "oceanReefMarkerBase",
+    { diameter: 0.026, segments: 8 },
+    sceneRef
+  );
+  oceanBaseMarker.material = oceanMaterial;
+  oceanBaseMarker.isVisible = false;
+
+  OCEAN_MAJOR_REEFS.forEach((reef, index) => {
+    const marker = oceanBaseMarker.createInstance(`reefMarker${index}`);
+    marker.parent = oceanRoot;
+    marker.position = latLonToVector3(reef.lat, reef.lon, 1.025);
+    const scale = 0.8 + (reef.health / 100) * 1.6;
+    marker.scaling.set(scale, scale, scale);
+  });
+  oceanRoot.setEnabled(false);
+
+  const auroraNorth = createLatitudeBand(67, 1.034, 140);
+  const auroraSouth = createLatitudeBand(-67, 1.034, 140);
+  const astronomyMesh = BABYLON.MeshBuilder.CreateLineSystem(
+    "astronomyAuroraLayer",
+    { lines: [auroraNorth, auroraSouth], updatable: false },
+    sceneRef
+  );
+  astronomyMesh.color = new BABYLON.Color3(0.47, 0.95, 0.7);
+  astronomyMesh.alpha = 0.96;
+  astronomyMesh.setEnabled(false);
+
+  const ecologyLines = ECOLOGY_FOREST_CARBON.map((forest) => {
+    const normalized = forest.gtco2 / 123;
+    const start = latLonToVector3(forest.lat, forest.lon, 1.013);
+    const end = latLonToVector3(forest.lat, forest.lon, 1.013 + normalized * 0.34 + 0.06);
+    return [start, end];
+  });
+  const ecologyMesh = BABYLON.MeshBuilder.CreateLineSystem(
+    "ecologyForestCarbonLayer",
+    { lines: ecologyLines, updatable: false },
+    sceneRef
+  );
+  ecologyMesh.color = new BABYLON.Color3(0.48, 0.86, 0.5);
+  ecologyMesh.alpha = 0.95;
+  ecologyMesh.setEnabled(false);
+
+  const renewableLines = ENVIRONMENTAL_RENEWABLE_HUBS.map((hub) => {
+    const normalized = hub.gw / 27;
+    const start = latLonToVector3(hub.lat, hub.lon, 1.013);
+    const end = latLonToVector3(hub.lat, hub.lon, 1.013 + 0.06 + normalized * 0.26);
+    return [start, end];
+  });
+  const renewableMesh = BABYLON.MeshBuilder.CreateLineSystem(
+    "environmentalRenewablesLayer",
+    { lines: renewableLines, updatable: false },
+    sceneRef
+  );
+  renewableMesh.color = new BABYLON.Color3(0.56, 0.84, 1);
+  renewableMesh.alpha = 0.95;
+  renewableMesh.setEnabled(false);
+
+  return {
+    climate: {
+      show: () => climateMesh.setEnabled(true),
+      hide: () => climateMesh.setEnabled(false),
+    },
+    geology: {
+      show: () => geologyMesh.setEnabled(true),
+      hide: () => geologyMesh.setEnabled(false),
+    },
+    oceanography: {
+      show: () => oceanRoot.setEnabled(true),
+      hide: () => oceanRoot.setEnabled(false),
+    },
+    astronomy: {
+      show: () => astronomyMesh.setEnabled(true),
+      hide: () => astronomyMesh.setEnabled(false),
+    },
+    ecology: {
+      show: () => ecologyMesh.setEnabled(true),
+      hide: () => ecologyMesh.setEnabled(false),
+    },
+    environmental: {
+      show: () => renewableMesh.setEnabled(true),
+      hide: () => renewableMesh.setEnabled(false),
+    },
+  };
+};
+
+const applyDataLayerState = (layerId, isActive) => {
+  const layer = layerRegistry[layerId];
+  if (!layer) {
+    return;
+  }
+
+  dataLayerState[layerId] = isActive;
+  if (isActive) {
+    layer.show();
+  } else {
+    layer.hide();
+  }
+
+  setDataLayerButtonState(layerId, isActive);
+  updateDataInsightPanel();
 };
 
 const setCurrentGlobeVisibility = (isVisible) => {
@@ -606,6 +1054,9 @@ const applyPendingSelection = async () => {
 
   applyMapMode(selectedState.mapMode);
   applySkinMode(selectedState.skinMode);
+  Object.entries(selectedState.dataLayers || {}).forEach(([layerId, isActive]) => {
+    applyDataLayerState(layerId, Boolean(isActive));
+  });
   setAtmosphereEffect(selectedState.effects.atmosphere);
   setGlowEffect(selectedState.effects.glow);
   setSpinEffect(selectedState.effects.spin);
@@ -854,13 +1305,12 @@ const createScene = () => {
   const texturePaths = [
     "assets/maps/earth_daymap.jpg",
     "assets/maps/earth_normal_map.jpeg",
-    "assets/maps/pop_density_map.jpg",
     "assets/maps/earth_nightmap.jpg",
   ];
 
   let loadedTextures = 0;
   let failedTextures = 0;
-  const totalTextures = texturePaths.length + 1;
+  const totalTextures = 6;
   let texturesReady = false;
   let introReady = false;
   let startupFinalized = false;
@@ -874,6 +1324,12 @@ const createScene = () => {
     setCurrentGlobeVisibility(true);
     setStatus("Scene ready.");
     setControlsDisabled(false);
+
+    if (pendingResetRequest) {
+      pendingResetRequest = false;
+      applyDefaultEarthState(true);
+    }
+
     window.setTimeout(() => {
       hideStatus();
       hidePageLoader();
@@ -918,10 +1374,10 @@ const createScene = () => {
   materials.earth.bumpTexture = createTexture(texturePaths[1], sceneRef, onLoaded, onError);
 
   materials.population = new BABYLON.StandardMaterial("populationMaterial", sceneRef);
-  materials.population.diffuseTexture = createTexture(texturePaths[2], sceneRef, onLoaded, onError);
+  materials.population.diffuseTexture = createPopulationHeatmapTexture(sceneRef, onLoaded);
 
   materials.night = new BABYLON.StandardMaterial("nightMaterial", sceneRef);
-  materials.night.diffuseTexture = createTexture(texturePaths[3], sceneRef, onLoaded, onError);
+  materials.night.diffuseTexture = createTexture(texturePaths[2], sceneRef, onLoaded, onError);
 
   materials.atmosphere = new BABYLON.StandardMaterial("atmosphereMaterial", sceneRef);
   materials.atmosphere.emissiveColor = new BABYLON.Color3(0.2, 0.58, 0.9);
@@ -935,18 +1391,30 @@ const createScene = () => {
   materials.cloud.specularColor = BABYLON.Color3.Black();
   materials.cloud.emissiveColor = new BABYLON.Color3(0.03, 0.05, 0.08);
 
+  layerRegistry = createDataLayerRegistry(sceneRef);
+
   currentMeshMode = "sphere";
   currentMapMode = "day";
   currentSkinMode = "realistic";
   effectsState.atmosphere = true;
   effectsState.glow = false;
   effectsState.spin = false;
+  dataLayerState.climate = false;
+  dataLayerState.geology = false;
+  dataLayerState.oceanography = false;
+  dataLayerState.astronomy = false;
+  dataLayerState.ecology = false;
+  dataLayerState.environmental = false;
 
   setActiveMeshSet("sphere");
   setButtonGroupState(meshButtons, "sphere", "data-mesh-mode");
   applyMapMode(currentMapMode);
   applySkinMode("colormap");
   applySkinMode(currentSkinMode);
+  Object.keys(dataLayerState).forEach((layerId) => {
+    applyDataLayerState(layerId, false);
+  });
+  updateDataInsightPanel();
   setAtmosphereEffect(false);
   setAtmosphereEffect(true);
   setGlowEffect(false);
@@ -1060,6 +1528,25 @@ const bindControls = () => {
     });
   });
 
+  dataLayerButtons.forEach((button) => {
+    safeAddEventListener(button, "click", () => {
+      const layerId = button.dataset.layer;
+      if (!layerId) {
+        return;
+      }
+
+      if (pendingSelection) {
+        const nextActive = !pendingSelection.dataLayers[layerId];
+        pendingSelection.dataLayers[layerId] = nextActive;
+        setDataLayerButtonState(layerId, nextActive);
+        return;
+      }
+
+      const nextActive = !dataLayerState[layerId];
+      applyDataLayerState(layerId, nextActive);
+    });
+  });
+
   safeAddEventListener(startButton, "click", () => {
     if (hasEnteredViewingMode && !isMenuReengageReady) {
       beginMenuReengageSequence();
@@ -1104,7 +1591,7 @@ const bindControls = () => {
   safeAddEventListener(confirmControls, commitControlsSelectionAndExit);
   safeAddEventListener(confirmControls, "pointerup", commitControlsSelectionAndExit);
 
-  safeAddEventListener(controlsOverlay, async (e) => {
+  safeAddEventListener(controlsOverlay, "click", async (e) => {
     const confirmTrigger = e.target?.closest?.("#confirm-controls");
     if (confirmTrigger) {
       await commitControlsSelectionAndExit(e);

@@ -80,6 +80,19 @@
 
       <div id="scene-status" aria-live="polite" aria-label="Scene status"></div>
 
+      <aside
+        id="data-insight-panel"
+        class="data-insight-panel hidden"
+        aria-live="polite"
+        aria-label="Active educational data layer details"
+      >
+        <p id="data-insight-kicker" class="insight-kicker">Educational Layer</p>
+        <h2 id="data-insight-title" class="insight-title">Topic insight</h2>
+        <p id="data-insight-summary" class="insight-summary"></p>
+        <p id="data-insight-stat" class="insight-stat"></p>
+        <a id="data-insight-link" class="insight-link" href="blog.html">Read matching article</a>
+      </aside>
+
       <section
         id="controls-overlay"
         class="controls-overlay hidden"
@@ -100,7 +113,7 @@
                 type="button"
                 aria-pressed="false"
               >
-                Population
+                Climate Heatmap
               </button>
               <button
                 class="control-button"
@@ -181,6 +194,40 @@
               </button>
               <button class="control-button" data-effect="spin" type="button" aria-pressed="false">
                 Auto Spin
+              </button>
+            </div>
+          </div>
+
+          <div class="control-group" aria-label="Data layer controls">
+            <p class="control-label">Data Layers</p>
+            <div class="control-row">
+              <button class="control-button" data-layer="climate" type="button" aria-pressed="false">
+                Climate CO2
+              </button>
+              <button class="control-button" data-layer="geology" type="button" aria-pressed="false">
+                Quakes
+              </button>
+              <button
+                class="control-button"
+                data-layer="oceanography"
+                type="button"
+                aria-pressed="false"
+              >
+                Coral Reefs
+              </button>
+              <button class="control-button" data-layer="astronomy" type="button" aria-pressed="false">
+                Aurora Belt
+              </button>
+              <button class="control-button" data-layer="ecology" type="button" aria-pressed="false">
+                Forest Carbon
+              </button>
+              <button
+                class="control-button"
+                data-layer="environmental"
+                type="button"
+                aria-pressed="false"
+              >
+                Renewable Hubs
               </button>
             </div>
           </div>
