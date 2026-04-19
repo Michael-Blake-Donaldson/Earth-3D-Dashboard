@@ -410,6 +410,13 @@
   line-height: 1.45;
 }
 
+.insight-meta {
+  margin: 0;
+  color: #a7c3e8;
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
 .insight-link {
   justify-self: start;
   margin-top: 4px;
@@ -427,6 +434,35 @@
 
 .insight-link:hover {
   background: rgba(45, 87, 155, 0.66);
+}
+
+.range-control-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.range-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #b6cbec;
+  font-weight: 700;
+}
+
+.range-input {
+  width: 100%;
+  accent-color: #7dcfff;
+}
+
+.range-value {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: #e3f0ff;
+  font-weight: 700;
+  min-width: 44px;
+  text-align: right;
 }
 
 @media (max-width: 768px) {

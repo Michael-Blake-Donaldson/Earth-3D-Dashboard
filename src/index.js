@@ -11,7 +11,11 @@ let dataInsightKicker;
 let dataInsightTitle;
 let dataInsightSummary;
 let dataInsightStat;
+let dataInsightSource;
+let dataInsightUpdated;
 let dataInsightLink;
+let layerOpacityInput;
+let layerOpacityValue;
 
 let mapButtons = [];
 let skinButtons = [];
@@ -35,7 +39,11 @@ const initDomRefs = () => {
   dataInsightTitle = document.getElementById("data-insight-title");
   dataInsightSummary = document.getElementById("data-insight-summary");
   dataInsightStat = document.getElementById("data-insight-stat");
+  dataInsightSource = document.getElementById("data-insight-source");
+  dataInsightUpdated = document.getElementById("data-insight-updated");
   dataInsightLink = document.getElementById("data-insight-link");
+  layerOpacityInput = document.getElementById("layer-opacity");
+  layerOpacityValue = document.getElementById("layer-opacity-value");
   mapButtons = [...document.querySelectorAll("[data-map-mode]")];
   skinButtons = [...document.querySelectorAll("[data-skin-mode]")];
   meshButtons = [...document.querySelectorAll("[data-mesh-mode]")];
@@ -64,6 +72,7 @@ let isMenuReengageReady = false;
 let menuReengageFrameId = 0;
 let pendingResetRequest = false;
 let layerRegistry = {};
+let dataLayerOpacity = 0.95;
 
 const meshSetCache = {
   sphere: null,
@@ -167,37 +176,86 @@ const LAYER_META = {
     title: "Carbon Emission Hotspots",
     summary: "Top national emitters scaled by annual fossil CO2 output. Useful for understanding mitigation priority.",
     stat: "Dataset: top 10 annual emitters, MtCO2 per year (OWID/Global Carbon Project style values).",
+    source: "Our World in Data, Global Carbon Project",
+    sourceUrl: "https://ourworldindata.org/co2-and-greenhouse-gas-emissions",
+    year: "2023",
+    updated: "2026-03-15",
   },
   geology: {
     category: "Geology",
     title: "Great Earthquake Belt",
     summary: "Historic high-magnitude earthquakes illuminate subduction zones and plate-boundary hazard corridors.",
     stat: "Dataset: selected M8.6-M9.5 earthquakes with epicenter coordinates (USGS-style records).",
+    source: "USGS Earthquake Catalog",
+    sourceUrl: "https://earthquake.usgs.gov/earthquakes/search/",
+    year: "1906-2011",
+    updated: "2026-03-15",
   },
   oceanography: {
     category: "Oceanography",
     title: "Coral Reef Vital Zones",
     summary: "Major reef systems in tropical seas. Marker intensity approximates present ecological condition.",
     stat: "Dataset: representative global reef clusters with health index (0-100).",
+    source: "NOAA Coral Reef Watch, UNEP-WCMC",
+    sourceUrl: "https://coralreefwatch.noaa.gov/",
+    year: "2023",
+    updated: "2026-03-15",
   },
   astronomy: {
     category: "Astronomy",
     title: "Auroral Ovals",
     summary: "Aurora belts show where charged particles from solar wind couple most strongly with Earth's magnetosphere.",
     stat: "Dataset: modeled mean auroral oval latitudes near +/-67 degrees geomagnetic latitude.",
+    source: "NOAA SWPC, NASA heliophysics references",
+    sourceUrl: "https://www.swpc.noaa.gov/",
+    year: "Modeled climatology",
+    updated: "2026-03-15",
   },
   ecology: {
     category: "Ecology",
     title: "Forest Carbon Reservoirs",
     summary: "Large biomes storing major terrestrial carbon stocks. Taller bars indicate larger carbon storage.",
     stat: "Dataset: regional forest biomass carbon estimates in GtCO2-equivalent.",
+    source: "FAO FRA, Global Forest Watch synthesis",
+    sourceUrl: "https://fra-data.fao.org/",
+    year: "2020-2023",
+    updated: "2026-03-15",
   },
   environmental: {
     category: "Environmental Science",
     title: "Renewable Energy Hubs",
     summary: "High-capacity solar, wind, hydro, and hybrid zones that anchor clean-grid transitions.",
     stat: "Dataset: representative utility-scale renewable clusters with capacity in GW.",
+    source: "IRENA, IEA open datasets",
+    sourceUrl: "https://www.irena.org/Data",
+    year: "2023",
+    updated: "2026-03-15",
   },
+};
+
+const analyticsEvents = [];
+
+const trackEvent = (eventName, details = {}) => {
+  const event = {
+    event: eventName,
+    details,
+    timestamp: new Date().toISOString(),
+  };
+
+  analyticsEvents.push(event);
+  if (analyticsEvents.length > 150) {
+    analyticsEvents.shift();
+  }
+
+  try {
+    localStorage.setItem("earthDashboardAnalytics", JSON.stringify(analyticsEvents));
+  } catch (error) {
+    console.warn("Analytics persistence unavailable.", error);
+  }
+
+  if (window?.console) {
+    console.info("[analytics]", eventName, details);
+  }
 };
 
 const safeAddEventListener = (element, eventName, handler) => {
@@ -514,6 +572,25 @@ const setDataLayerButtonState = (layerId, active) => {
   button.setAttribute("aria-pressed", String(active));
 };
 
+const applyDataLayerOpacity = (opacity) => {
+  const clamped = Math.min(1, Math.max(0.2, opacity));
+  dataLayerOpacity = clamped;
+
+  Object.values(layerRegistry).forEach((layer) => {
+    if (layer && typeof layer.setOpacity === "function") {
+      layer.setOpacity(clamped);
+    }
+  });
+
+  if (layerOpacityInput) {
+    layerOpacityInput.value = clamped.toFixed(2);
+  }
+
+  if (layerOpacityValue) {
+    layerOpacityValue.textContent = `${Math.round(clamped * 100)}%`;
+  }
+};
+
 const getLayerArticleLink = (layerId) => {
   const title = LAYER_ARTICLE_TITLES[layerId];
   if (!title) {
@@ -530,6 +607,8 @@ const updateDataInsightPanel = () => {
     !dataInsightTitle ||
     !dataInsightSummary ||
     !dataInsightStat ||
+    !dataInsightSource ||
+    !dataInsightUpdated ||
     !dataInsightLink
   ) {
     return;
@@ -559,8 +638,11 @@ const updateDataInsightPanel = () => {
     activeLayers.length > 1
       ? `${meta.stat} Active layers: ${activeLayers.length}.`
       : meta.stat;
+  dataInsightSource.textContent = `Source: ${meta.source}`;
+  dataInsightUpdated.textContent = `Coverage year: ${meta.year} | Refreshed: ${meta.updated}`;
   dataInsightLink.href = getLayerArticleLink(focusLayer);
   dataInsightLink.textContent = `Read ${meta.category} article`;
+  dataInsightLink.title = `Source: ${meta.sourceUrl}`;
 };
 
 const latLonToVector3 = (lat, lon, radius = 1) => {
@@ -675,7 +757,7 @@ const createDataLayerRegistry = (sceneRef) => {
     sceneRef
   );
   climateMesh.color = new BABYLON.Color3(1, 0.58, 0.35);
-  climateMesh.alpha = 0.94;
+  climateMesh.alpha = dataLayerOpacity;
   climateMesh.setEnabled(false);
 
   const geologyLines = GEOLOGY_MAJOR_QUAKES.map((quake) => {
@@ -695,12 +777,13 @@ const createDataLayerRegistry = (sceneRef) => {
     sceneRef
   );
   geologyMesh.color = new BABYLON.Color3(0.98, 0.45, 0.56);
-  geologyMesh.alpha = 0.94;
+  geologyMesh.alpha = dataLayerOpacity;
   geologyMesh.setEnabled(false);
 
   const oceanMaterial = new BABYLON.StandardMaterial("oceanReefMarkerMaterial", sceneRef);
   oceanMaterial.disableLighting = true;
   oceanMaterial.emissiveColor = new BABYLON.Color3(0.35, 0.92, 0.82);
+  oceanMaterial.alpha = dataLayerOpacity;
   const oceanRoot = new BABYLON.TransformNode("oceanReefLayerRoot", sceneRef);
   const oceanBaseMarker = BABYLON.MeshBuilder.CreateSphere(
     "oceanReefMarkerBase",
@@ -727,7 +810,7 @@ const createDataLayerRegistry = (sceneRef) => {
     sceneRef
   );
   astronomyMesh.color = new BABYLON.Color3(0.47, 0.95, 0.7);
-  astronomyMesh.alpha = 0.96;
+  astronomyMesh.alpha = dataLayerOpacity;
   astronomyMesh.setEnabled(false);
 
   const ecologyLines = ECOLOGY_FOREST_CARBON.map((forest) => {
@@ -742,7 +825,7 @@ const createDataLayerRegistry = (sceneRef) => {
     sceneRef
   );
   ecologyMesh.color = new BABYLON.Color3(0.48, 0.86, 0.5);
-  ecologyMesh.alpha = 0.95;
+  ecologyMesh.alpha = dataLayerOpacity;
   ecologyMesh.setEnabled(false);
 
   const renewableLines = ENVIRONMENTAL_RENEWABLE_HUBS.map((hub) => {
@@ -757,33 +840,51 @@ const createDataLayerRegistry = (sceneRef) => {
     sceneRef
   );
   renewableMesh.color = new BABYLON.Color3(0.56, 0.84, 1);
-  renewableMesh.alpha = 0.95;
+  renewableMesh.alpha = dataLayerOpacity;
   renewableMesh.setEnabled(false);
 
   return {
     climate: {
       show: () => climateMesh.setEnabled(true),
       hide: () => climateMesh.setEnabled(false),
+      setOpacity: (value) => {
+        climateMesh.alpha = value;
+      },
     },
     geology: {
       show: () => geologyMesh.setEnabled(true),
       hide: () => geologyMesh.setEnabled(false),
+      setOpacity: (value) => {
+        geologyMesh.alpha = value;
+      },
     },
     oceanography: {
       show: () => oceanRoot.setEnabled(true),
       hide: () => oceanRoot.setEnabled(false),
+      setOpacity: (value) => {
+        oceanMaterial.alpha = value;
+      },
     },
     astronomy: {
       show: () => astronomyMesh.setEnabled(true),
       hide: () => astronomyMesh.setEnabled(false),
+      setOpacity: (value) => {
+        astronomyMesh.alpha = value;
+      },
     },
     ecology: {
       show: () => ecologyMesh.setEnabled(true),
       hide: () => ecologyMesh.setEnabled(false),
+      setOpacity: (value) => {
+        ecologyMesh.alpha = value;
+      },
     },
     environmental: {
       show: () => renewableMesh.setEnabled(true),
       hide: () => renewableMesh.setEnabled(false),
+      setOpacity: (value) => {
+        renewableMesh.alpha = value;
+      },
     },
   };
 };
@@ -803,6 +904,7 @@ const applyDataLayerState = (layerId, isActive) => {
 
   setDataLayerButtonState(layerId, isActive);
   updateDataInsightPanel();
+  trackEvent("layer_toggled", { layerId, isActive });
 };
 
 const setCurrentGlobeVisibility = (isVisible) => {
@@ -1411,6 +1513,7 @@ const createScene = () => {
   applyMapMode(currentMapMode);
   applySkinMode("colormap");
   applySkinMode(currentSkinMode);
+  applyDataLayerOpacity(dataLayerOpacity);
   Object.keys(dataLayerState).forEach((layerId) => {
     applyDataLayerState(layerId, false);
   });
@@ -1467,6 +1570,7 @@ const bindControls = () => {
         }
 
         applyMapMode(modeName);
+        trackEvent("map_mode_changed", { mode: modeName });
       }
     });
   });
@@ -1482,6 +1586,7 @@ const bindControls = () => {
         }
 
         applySkinMode(skinName);
+        trackEvent("skin_mode_changed", { mode: skinName });
       }
     });
   });
@@ -1497,6 +1602,7 @@ const bindControls = () => {
         }
 
         buildMeshSet(meshMode);
+        trackEvent("mesh_mode_changed", { mode: meshMode });
       }
     });
   });
@@ -1516,14 +1622,17 @@ const bindControls = () => {
 
       if (effectName === "atmosphere") {
         setAtmosphereEffect(!effectsState.atmosphere);
+        trackEvent("effect_toggled", { effectName, active: effectsState.atmosphere });
       }
 
       if (effectName === "glow") {
         setGlowEffect(!effectsState.glow);
+        trackEvent("effect_toggled", { effectName, active: effectsState.glow });
       }
 
       if (effectName === "spin") {
         setSpinEffect(!effectsState.spin);
+        trackEvent("effect_toggled", { effectName, active: effectsState.spin });
       }
     });
   });
@@ -1547,6 +1656,15 @@ const bindControls = () => {
     });
   });
 
+  safeAddEventListener(layerOpacityInput, "input", (event) => {
+    const value = Number(event.target?.value || dataLayerOpacity);
+    applyDataLayerOpacity(value);
+  });
+
+  safeAddEventListener(layerOpacityInput, "change", () => {
+    trackEvent("layer_opacity_changed", { opacity: Number(dataLayerOpacity.toFixed(2)) });
+  });
+
   safeAddEventListener(startButton, "click", () => {
     if (hasEnteredViewingMode && !isMenuReengageReady) {
       beginMenuReengageSequence();
@@ -1554,6 +1672,7 @@ const bindControls = () => {
     }
 
     showControlsOverlay();
+    trackEvent("controls_opened", { source: "hero_cta" });
   });
 
   safeAddEventListener(heroContent, "mouseenter", () => {
@@ -1579,11 +1698,13 @@ const bindControls = () => {
       const action = link.dataset.navAction;
       if (action === "open-controls") {
         showControlsOverlay();
+        trackEvent("controls_opened", { source: "top_nav" });
         return;
       }
 
       if (action === "reset-view") {
         resetEarthState();
+        trackEvent("globe_reset", {});
       }
     });
   });

@@ -90,6 +90,8 @@
         <h2 id="data-insight-title" class="insight-title">Topic insight</h2>
         <p id="data-insight-summary" class="insight-summary"></p>
         <p id="data-insight-stat" class="insight-stat"></p>
+        <p id="data-insight-source" class="insight-meta"></p>
+        <p id="data-insight-updated" class="insight-meta"></p>
         <a id="data-insight-link" class="insight-link" href="blog.html">Read matching article</a>
       </aside>
 
@@ -229,6 +231,23 @@
               >
                 Renewable Hubs
               </button>
+            </div>
+          </div>
+
+          <div class="control-group" aria-label="Data appearance controls">
+            <p class="control-label">Data Appearance</p>
+            <div class="range-control-row">
+              <label class="range-label" for="layer-opacity">Layer Opacity</label>
+              <input
+                id="layer-opacity"
+                class="range-input"
+                type="range"
+                min="0.2"
+                max="1"
+                value="0.95"
+                step="0.05"
+              />
+              <span id="layer-opacity-value" class="range-value">95%</span>
             </div>
           </div>
         </section>
