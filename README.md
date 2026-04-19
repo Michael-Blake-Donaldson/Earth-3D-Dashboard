@@ -2,11 +2,11 @@
 
 [![CI](https://github.com/Michael-Blake-Donaldson/Earth-3D-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/Michael-Blake-Donaldson/Earth-3D-Dashboard/actions/workflows/ci.yml)
 
+![Earth 3D Dashboard — interactive globe with atmosphere shell and NASA day texture](docs/preview.png)
+
 **[Live Demo →](https://michael-blake-donaldson.github.io/Earth-3D-Dashboard/)**
 
 An interactive 3D Earth visualization and science content hub. Explore real planetary data — climate emissions, earthquake sites, coral reef health, aurora zones, forest carbon stores, and renewable energy hubs — rendered directly on a rotatable 3D globe. Each data layer links to a curated Earth science article for deeper context.
-
-> Replace `src/assets/og-preview.png` with an actual screenshot of the globe once deployed for best social share previews.
 
 ---
 
